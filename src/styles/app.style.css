@@ -1,11 +1,3 @@
-.page-child {
-  min-height: 0;
-  flex: auto;
-  margin: 8px;
-  display: flex;
-  flex-direction: column;
-}
-
 .red {
   background: red;
 }

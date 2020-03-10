@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
-import MapGL, { Source, Layer, ViewportProps, ExtraState } from 'react-map-gl';
-import AircraftMarkers from './AircraftMarkers';
+import MapGL, { MapLoadEvent, ViewportProps, ExtraState } from 'react-map-gl';
+import { svgToImageAsync } from '@daniel.neuweiler/ts-lib-module';
+import AircraftLayer from './AircraftLayer';
 import { Constants } from './../mapbox';
 import { IStateVectorData, IStateVector, IMapGeoBounds } from './../opensky';
+import AircraftIcon from './../resources/airplanemode_active-24px.svg';
 
 interface ILocalProps {
   stateVectors: IStateVectorData;
@@ -15,7 +17,6 @@ const FlightMap: React.FC<Props> = (props) => {
 
   // States
   const [viewportProps, setViewportProps] = useState<ViewportProps | undefined>(undefined);
-  const [isInteracting, setInteraction] = useState(false);
 
   // Refs
   const mapRef = useRef<MapGL>(null);
@@ -42,26 +43,26 @@ const FlightMap: React.FC<Props> = (props) => {
     return mapGeoBounds;
   };
 
-  const handleInteractionChange = (interactionState: ExtraState) => {
+  const handleLoad = (e: MapLoadEvent) => {
 
-    if (interactionState.isPanning || interactionState.isZooming) {
-
-      setInteraction(true);
-      return;
-    }
-
-    setInteraction(false);
-
-    if (!viewportProps)
+    if (!mapRef.current)
       return;
 
-    const mapGeoBounds = getMapGeoBounds();
-    if (props.onMapChange)
-      props.onMapChange(viewportProps, mapGeoBounds);
+    var map = mapRef.current.getMap();
+
+    svgToImageAsync(AircraftIcon, 24, 24).then(image => {
+
+      map.addImage('aircraft-icon', image, { sdf: true });
+    });
   };
 
   const handleViewportChange = (viewState: ViewportProps, interactionState: ExtraState, oldViewState: ViewportProps) => {
+
     setViewportProps(viewState);
+
+    const mapGeoBounds = getMapGeoBounds();
+    if (props.onMapChange)
+      props.onMapChange(viewState, mapGeoBounds);
   };
 
   // Helpers
@@ -80,6 +81,7 @@ const FlightMap: React.FC<Props> = (props) => {
   }
 
   return (
+
     <MapGL
       ref={mapRef}
       zoom={Constants.DEFAULT_ZOOM}
@@ -91,23 +93,12 @@ const FlightMap: React.FC<Props> = (props) => {
       height={'100%'}
       mapStyle="mapbox://styles/mapbox/dark-v10"
       mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
-      onInteractionStateChange={handleInteractionChange}
+      onLoad={handleLoad}
       onViewportChange={handleViewportChange}>
 
-      {/* <Source
-        type="geojson"
-        data={data}>
-        <Layer {...dataLayer} />
-      </Source> */}
+      <AircraftLayer
+        stateVectors={props.stateVectors} />
 
-      {!isInteracting &&
-        <AircraftMarkers
-          stateVectors={props.stateVectors}
-          zoom={viewportProps ? viewportProps.zoom : 1}
-          onSelect={props.onAircraftSelect}>
-
-        </AircraftMarkers>
-      }
     </MapGL>
   );
 }

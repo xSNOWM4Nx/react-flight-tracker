@@ -3,11 +3,11 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import grey from '@material-ui/core/colors/grey';
 import amber from '@material-ui/core/colors/amber';
-import { ApplicationProvider } from '@mymodules/react-lib-module';
+import { ApplicationProvider } from '@daniel.neuweiler/react-lib-module';
 
 import ProviderPage from './ProviderPage';
 
-import '@mymodules/ts-lib-module/styles/default.style.css';
+import '@daniel.neuweiler/ts-lib-module/build/src/styles/default.style.css';
 import './../styles/app.style.css';
 
 const theme = createMuiTheme({

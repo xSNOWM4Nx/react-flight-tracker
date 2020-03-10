@@ -1,22 +1,11 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { ViewportProps } from 'react-map-gl';
-import { ServiceKeys, IRESTService } from '@mymodules/ts-lib-module';
-import { ServiceContext } from '@mymodules/react-lib-module';
+import { ServiceKeys, IRESTService } from '@daniel.neuweiler/ts-lib-module';
+import { ServiceContext } from '@daniel.neuweiler/react-lib-module';
 
-import { Constants } from './../mapbox';
 import { IDataTracker, DataTracker, IStateVectorData, IStateVector, IMapGeoBounds } from './../opensky';
 import FlightMap from './../components/FlightMap';
-import AircraftData from '../components/AircraftData';
-
-
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
-
-import RotateLeftIcon from '@material-ui/icons/RotateLeft';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -38,7 +27,6 @@ const MapPage: React.FC<Props> = (props) => {
   const classes = useStyles();
 
   // States
-  const [viewportProps, setViewportProps] = useState<ViewportProps | undefined>(undefined);
   const [stateVectors, setStateVectors] = useState<IStateVectorData>({ time: Date.now(), states: [] });
   const [selectedStateVector, setSelectedStateVector] = useState<IStateVector | undefined>(undefined);
 
@@ -92,105 +80,18 @@ const MapPage: React.FC<Props> = (props) => {
     setSelectedStateVector(stateVector);
   };
 
-  const renderMapFooter = () => {
-
-    return (
-
-      <Card
-        className={classes.cardRoot}>
-
-        <div
-          style={{
-            height: '100%',
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            alignContent: 'center',
-            textAlign: 'center'
-          }}>
-
-          <div style={{ minWidth: 8 }} />
-
-          <IconButton
-            aria-label="reset"
-            onClick={(e) => {
-
-              if (!viewportProps)
-                return;
-
-              var newViewportProps = { ...viewportProps };
-              newViewportProps.bearing = 0;
-              newViewportProps.pitch = 0;
-              newViewportProps.zoom = Constants.DEFAULT_ZOOM;
-              newViewportProps.latitude = Constants.DEFAULT_LATITUDE;
-              newViewportProps.longitude = Constants.DEFAULT_LONGITUDE;
-
-              setViewportProps(newViewportProps);
-            }}>
-
-            <RotateLeftIcon fontSize='large' />
-          </IconButton>
-
-          <Typography
-            variant="h5">
-            {stateVectors ? stateVectors.states.length : 0}
-          </Typography>
-
-        </div>
-      </Card>
-    );
-  };
-
   return (
     <div
       style={{
         height: '100%',
         overflow: 'hidden',
-        margin: 8,
-        display: 'flex',
-        flexDirection: 'row'
+        margin: 8
       }}>
 
-      <div
-        style={{
-          flex: 'auto',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-
-        <div
-          style={{
-            overflow: 'hidden',
-            flex: 'auto',
-          }}>
-          <FlightMap
-            stateVectors={stateVectors}
-            onMapChange={handleMapChange}
-            onAircraftSelect={handleAircraftSelect} />
-        </div>
-
-        <div style={{ minHeight: 16 }} />
-
-        <div
-          style={{
-            height: 64,
-            minHeight: 64
-          }}>
-          {renderMapFooter()}
-        </div>
-
-      </div>
-
-      <div style={{ minWidth: 16 }} />
-
-      <div
-        style={{
-          width: 384
-        }}>
-        <AircraftData
-          aircraftData={selectedStateVector} />
-      </div>
+      <FlightMap
+        stateVectors={stateVectors}
+        onMapChange={handleMapChange}
+        onAircraftSelect={handleAircraftSelect} />
 
     </div>
   )

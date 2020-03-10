@@ -1,4 +1,4 @@
-import { IRESTService } from '@mymodules/ts-lib-module';
+import { IRESTService } from '@daniel.neuweiler/ts-lib-module';
 import {
   IStateVectorData, IStateVectorRawData, IStateVector,
   IAircraftFlight, IAircraftFullTrack,
@@ -53,7 +53,7 @@ export class DataTracker implements IDataTracker {
 
   public start = () => {
 
-    this.fetchStateVectorIntervalID = window.setInterval(this.fetchStateVectors, 5000);
+    this.fetchStateVectorIntervalID = window.setInterval(this.fetchStateVectors, 6000);
     this.fetchAircraftTrackIntervalID = window.setInterval(this.fetchAircraftTrack, 30000);
 
     this.fetchStateVectors();

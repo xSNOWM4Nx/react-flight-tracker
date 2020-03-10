@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React from 'react';
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom';
 
 import StartPage from './StartPage';
