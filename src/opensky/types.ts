@@ -50,8 +50,7 @@ export interface IAircraftFlight {
   arrivalAirportCandidatesCount: number; // Number of other possible departure airports. These are airports in short distance to estArrivalAirport.
 }
 
-export interface IAircraftFullTrack {
+export interface IAircraftTrack {
   icao24: string; // Unique ICAO 24-bit address of the transponder in hex string representation.
   stateVector?: IStateVector;
-  flights: Array<IAircraftFlight>;
 }

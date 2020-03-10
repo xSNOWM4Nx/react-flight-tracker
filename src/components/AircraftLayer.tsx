@@ -4,11 +4,12 @@ import { FeatureCollection, Feature, GeoJsonProperties, Point, Position } from '
 import { SymbolLayout, SymbolPaint } from 'mapbox-gl';
 import { useTheme } from '@material-ui/core/styles';
 
-import { IStateVectorData } from '../opensky';
+import { IStateVectorData, IAircraftTrack } from '../opensky';
 
 interface ILocalProps {
   stateVectors: IStateVectorData;
-  selectedICAO24?: string;
+  zoom?: number;
+  selectedAircraft?: IAircraftTrack;
 }
 type Props = ILocalProps;
 
@@ -34,8 +35,8 @@ const AircraftLayer: React.FC<Props> = (props) => {
 
       var index = props.stateVectors.states.indexOf(stateVector);
       var isSelected = false;
-      if (props.selectedICAO24)
-        isSelected = stateVector.icao24 === props.selectedICAO24;
+      if (props.selectedAircraft)
+        isSelected = stateVector.icao24 === props.selectedAircraft.icao24;
 
       var properties: GeoJsonProperties = {
         ['isSelected']: isSelected,
@@ -54,7 +55,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
 
       var feature: Feature = {
         type: 'Feature',
-        id: `[${index}].[${stateVector.icao24}]`,
+        id: `${index}.${stateVector.icao24}`,
         geometry: point,
         properties: properties
       }
@@ -67,14 +68,18 @@ const AircraftLayer: React.FC<Props> = (props) => {
 
   const getSymbolLayout = () => {
 
+    var showText = false;
+    if (props.zoom && props.zoom > 7)
+      showText = true;
+
     var symbolLayout: SymbolLayout = {
       "icon-image": "aircraft-icon",
       "icon-allow-overlap": true,
       "icon-rotate": ["get", "true_track"],
-      "text-field": ["get", "callsign"],
-      "text-allow-overlap": true,
-      "text-anchor": 'top',
-      "text-offset": [0, 1]
+      "text-field": showText ? ["get", "callsign"] : '',
+      "text-allow-overlap": showText ? true : false,
+      "text-anchor": showText ? 'top' : 'center',
+      "text-offset": showText ? [0, 1] : [0, 0]
     };
 
     return symbolLayout;

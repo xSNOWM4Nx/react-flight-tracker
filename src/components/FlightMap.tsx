@@ -1,15 +1,17 @@
 import React, { useState, useRef } from 'react';
-import MapGL, { MapLoadEvent, ViewportProps, ExtraState } from 'react-map-gl';
+import MapGL, { MapLoadEvent, PointerEvent, ViewportProps, ExtraState } from 'react-map-gl';
+import { Feature } from 'geojson';
 import { svgToImageAsync } from '@daniel.neuweiler/ts-lib-module';
 import AircraftLayer from './AircraftLayer';
 import { Constants } from './../mapbox';
-import { IStateVectorData, IStateVector, IMapGeoBounds } from './../opensky';
+import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
 import AircraftIcon from './../resources/airplanemode_active-24px.svg';
 
 interface ILocalProps {
   stateVectors: IStateVectorData;
+  selectedAircraft?: IAircraftTrack;
   onMapChange?: (viewState: ViewportProps, geoBounds: IMapGeoBounds) => void;
-  onAircraftSelect?: (stateVector: IStateVector) => void;
+  onAircraftSelect?: (icao24: string) => void;
 }
 type Props = ILocalProps;
 
@@ -56,6 +58,21 @@ const FlightMap: React.FC<Props> = (props) => {
     });
   };
 
+  const handleClick = (e: PointerEvent) => {
+
+    if (e.features.length > 0) {
+
+      const selectedFeature = e.features[0] as Feature;
+      if (selectedFeature.properties) {
+
+        const icao24 = selectedFeature.properties['icao24'] as string;
+
+        if (props.onAircraftSelect)
+          props.onAircraftSelect(icao24);
+      }
+    }
+  };
+
   const handleViewportChange = (viewState: ViewportProps, interactionState: ExtraState, oldViewState: ViewportProps) => {
 
     setViewportProps(viewState);
@@ -94,10 +111,13 @@ const FlightMap: React.FC<Props> = (props) => {
       mapStyle="mapbox://styles/mapbox/dark-v10"
       mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
       onLoad={handleLoad}
+      onClick={handleClick}
       onViewportChange={handleViewportChange}>
 
       <AircraftLayer
-        stateVectors={props.stateVectors} />
+        stateVectors={props.stateVectors}
+        zoom={viewportProps ? viewportProps.zoom : undefined}
+        selectedAircraft={props.selectedAircraft} />
 
     </MapGL>
   );

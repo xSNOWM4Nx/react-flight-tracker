@@ -9,6 +9,7 @@ import { ApplicationProvider } from '@daniel.neuweiler/react-lib-module';
 import ProviderPage from './ProviderPage';
 import { OpenSkyAPIService } from './../services';
 
+import 'mapbox-gl/dist/mapbox-gl.css';
 import '@daniel.neuweiler/ts-lib-module/build/src/styles/default.style.css';
 import './../styles/app.style.css';
 
@@ -24,6 +25,9 @@ function App() {
   const handleInjectCustomServices = () => {
 
     var services: Array<IService> = [];
+
+    var openSkyAPIService = new OpenSkyAPIService(process.env.REACT_APP_OSKY_USERNAME, process.env.REACT_APP_OSKY_PASSWORD);
+    services.push(openSkyAPIService);
 
     return services;
   };
@@ -43,6 +47,7 @@ function App() {
 
           <ApplicationProvider
             onInjectCustomServices={handleInjectCustomServices}>
+
             <ProviderPage />
           </ApplicationProvider>
         </Suspense>

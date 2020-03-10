@@ -1,7 +1,7 @@
 import { IService, Service, ServiceStateEnumeration, ServiceKeys, IRESTService, ResponseStateEnumeration } from '@daniel.neuweiler/ts-lib-module';
 import {
   IStateVectorData, IStateVectorRawData, IStateVector,
-  IAircraftFlight, IAircraftFullTrack,
+  IAircraftFlight, IAircraftTrack,
   IMapGeoBounds
 } from './../opensky/types';
 import { URL, Constants } from './../opensky/constants';
@@ -10,6 +10,9 @@ export interface IOpenSkyAPIService extends IService {
   geoBounds: IMapGeoBounds;
   onStateVectorsUpdated: (caller: string, callbackHandler: (stateVectors: IStateVectorData) => void) => void;
   offStateVectorsUpdated: (caller: string, callbackHandler: (stateVectors: IStateVectorData) => void) => void;
+  trackAircraft: (icao24: string) => void;
+  onAircraftTrackUpdated: (caller: string, callbackHandler: (track: IAircraftTrack) => void) => void;
+  offAircraftTrackUpdated: (caller: string, callbackHandler: (track: IAircraftTrack) => void) => void;
 };
 
 export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
@@ -18,22 +21,26 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
   public geoBounds: IMapGeoBounds;
 
   // Props
-  private restService: IRESTService;
+  private restService?: IRESTService;
+
+  private userName?: string;
+  private password?: string;
   private hasCredentials: boolean = false;
-  private fetchStateVectorIntervalID: number = 0;
+
+  private fetchStateVectorsIntervalID: number = 0;
   private isFetchingStateVectors: boolean = false;
   private onStateVectorUpdateSubscribers: Array<(stateVectors: IStateVectorData) => void> = [];
 
-  constructor(restService: IRESTService, userName?: string, password?: string) {
+  private fetchTrackedStateVectorIntervalID: number = 0;
+  private isFetchingTrackedStateVector: boolean = false;
+  private onAircraftTrackUpdateSubscribers: Array<(track: IAircraftTrack) => void> = [];
+  private trackedAircraft: IAircraftTrack;
+
+  constructor(userName?: string, password?: string) {
     super('OpenSkyAPIService');
 
-    this.restService = restService;
-
-    if (userName && password) {
-
-      this.hasCredentials = true;
-      this.restService.setAuthorization(`Basic ${btoa(`${userName}:${password}`)}`);
-    }
+    this.userName = userName;
+    this.password = password;
 
     this.geoBounds = {
       southernLatitude: Constants.DEFAULT_MIN_LATITUDE,
@@ -42,14 +49,36 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
       easternLongitude: Constants.DEFAULT_MAX_LONGITUDE
     };
 
+    this.trackedAircraft = {
+      icao24: ''
+    };
   };
 
   public async start() {
 
+    // Check if the service provider was injected
     if (!this.serviceProvider) {
 
       this.updateState(ServiceStateEnumeration.Error);
-      return this.resolveNotStartingResponse('No service provider is injected. Some services that this service needs are not available.');
+      return this.resolveNotStartingResponse('No service provider is injected. As a result, some services are not available.');
+    }
+
+    // Get the REST service
+    this.restService = this.serviceProvider.getService<IRESTService>(ServiceKeys.RESTService);
+    if (!this.restService) {
+
+      this.updateState(ServiceStateEnumeration.Error);
+      return this.resolveNotStartingResponse('No REST service available.');
+    }
+
+    // Check for authorization
+    if (this.userName && this.password) {
+
+      this.hasCredentials = true;
+      this.restService.setAuthorization(`Basic ${btoa(`${this.userName}:${this.password}`)}`);
+
+      this.userName = undefined;
+      this.password = undefined;
     }
 
     var superResponse = await super.start();
@@ -57,14 +86,16 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
       return superResponse;
 
     const fetchStateVectorInterval: number = this.hasCredentials ? 6000 : 12000;
-    this.fetchStateVectorIntervalID = window.setInterval(this.fetchStateVectors, fetchStateVectorInterval);
+    this.fetchStateVectorsIntervalID = window.setInterval(this.fetchStateVectors, fetchStateVectorInterval);
+    this.fetchTrackedStateVectorIntervalID = window.setInterval(this.fetchStateVector, fetchStateVectorInterval);
 
     return superResponse;
   };
 
   public async stop() {
 
-    clearInterval(this.fetchStateVectorIntervalID);
+    clearInterval(this.fetchStateVectorsIntervalID);
+    clearInterval(this.fetchTrackedStateVectorIntervalID);
 
     var superResponse = await super.stop();
     return superResponse;
@@ -90,12 +121,43 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     this.logger.debug(`'${this.onStateVectorUpdateSubscribers.length}' subscribers for 'StateVectorsUpdated'.`);
   };
 
+  public trackAircraft = (icao24: string) => {
+
+    this.trackedAircraft.icao24 = icao24;
+    this.logger.info(`Start tracking for aircraft '${icao24}'.`);
+
+    this.fetchStateVector();
+  };
+
+  public onAircraftTrackUpdated = (caller: string, callbackHandler: (track: IAircraftTrack) => void) => {
+
+    var index = this.onAircraftTrackUpdateSubscribers.indexOf(callbackHandler);
+    if (index < 0)
+      this.onAircraftTrackUpdateSubscribers.push(callbackHandler);
+
+    this.logger.debug(`'${caller}' has subscribed for 'AircraftTrackUpdated'.`);
+    this.logger.debug(`'${this.onStateVectorUpdateSubscribers.length}' subscribers for 'AircraftTrackUpdated'.`);
+  };
+
+  public offAircraftTrackUpdated = (caller: string, callbackHandler: (track: IAircraftTrack) => void) => {
+
+    var index = this.onAircraftTrackUpdateSubscribers.indexOf(callbackHandler);
+    if (index >= 0)
+      this.onAircraftTrackUpdateSubscribers.splice(index, 1);
+
+    this.logger.debug(`'${caller}' has unsubscribed for 'AircraftTrackUpdated'.`);
+    this.logger.debug(`'${this.onStateVectorUpdateSubscribers.length}' subscribers for 'AircraftTrackUpdated'.`);
+  };
+
   private mapRawStateVectorData = (rawData: IStateVectorRawData) => {
 
     const data: IStateVectorData = {
       time: rawData.time,
       states: []
     };
+
+    if (!rawData.states)
+      return data;
 
     for (var rawStateVector of rawData.states) {
 
@@ -127,6 +189,9 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
 
   private fetchStateVectors = () => {
 
+    if (!this.restService)
+      return;
+
     if (this.isFetchingStateVectors)
       return;
 
@@ -141,7 +206,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     })
       .then(response => {
 
-        if (response.payload && (typeof response.payload === 'object')) {
+        if (response.payload) {
 
           var mappedData = this.mapRawStateVectorData(response.payload);
           this.onStateVectorUpdateSubscribers.forEach(callback => callback(mappedData))
@@ -152,6 +217,42 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
       .finally(() => {
 
         this.isFetchingStateVectors = false;
+      })
+  };
+
+  private fetchStateVector = () => {
+
+    if (!this.restService)
+      return;
+
+    if (this.trackedAircraft.icao24 === '')
+      return;
+
+    if (this.isFetchingTrackedStateVector)
+      return;
+
+    this.isFetchingTrackedStateVector = true;
+
+    var targetURL = `${URL}/states/all?ica24=${this.trackedAircraft.icao24}`;
+
+    this.restService.get<IStateVectorRawData>(targetURL, {
+      mode: 'cors',
+      credentials: this.hasCredentials ? 'include' : 'omit'
+    })
+      .then(response => {
+
+        if (response.payload) {
+
+          var mappedData = this.mapRawStateVectorData(response.payload);
+          this.trackedAircraft.stateVector = mappedData.states[0]
+          this.onAircraftTrackUpdateSubscribers.forEach(callback => callback(this.trackedAircraft))
+        }
+
+        this.isFetchingTrackedStateVector = false;
+      })
+      .finally(() => {
+
+        this.isFetchingTrackedStateVector = false;
       })
   };
 

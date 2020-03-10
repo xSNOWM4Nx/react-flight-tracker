@@ -1,10 +1,10 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { ViewportProps } from 'react-map-gl';
-import { ServiceKeys, IRESTService } from '@daniel.neuweiler/ts-lib-module';
 import { ServiceContext } from '@daniel.neuweiler/react-lib-module';
 
-import { IDataTracker, DataTracker, IStateVectorData, IStateVector, IMapGeoBounds } from './../opensky';
+import { IOpenSkyAPIService } from './../services';
+import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
 import FlightMap from './../components/FlightMap';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -28,56 +28,53 @@ const MapPage: React.FC<Props> = (props) => {
 
   // States
   const [stateVectors, setStateVectors] = useState<IStateVectorData>({ time: Date.now(), states: [] });
-  const [selectedStateVector, setSelectedStateVector] = useState<IStateVector | undefined>(undefined);
+  const [trackedAircraft, setTrackedAircraft] = useState<IAircraftTrack | undefined>(undefined);
 
   // Contexts
   const serviceContext = useContext(ServiceContext)
-  const restService = serviceContext.injectService<IRESTService>(ServiceKeys.RESTService);
-
-  // Refs
-  const dataTrackerRef = useRef<IDataTracker>(new DataTracker(restService!));
-  const selectedStateVectorRef = useRef<IStateVector | undefined>(selectedStateVector);
-  selectedStateVectorRef.current = selectedStateVector;
+  const openSkyAPIService = serviceContext.getService<IOpenSkyAPIService>('OpenSkyAPIService');
 
   // Effects
   useEffect(() => {
 
     // Mount
-    dataTrackerRef.current.setOpenSkyCredentials(process.env.REACT_APP_OSKY_USERNAME, process.env.REACT_APP_OSKY_PASSWORD);
-    dataTrackerRef.current.onStateVectorsUpdated('', handleStateVectorsUpdated);
-    dataTrackerRef.current.start();
+    if (openSkyAPIService) {
+
+      openSkyAPIService.onStateVectorsUpdated('MapPage', handleStateVectorsUpdated);
+      openSkyAPIService.onAircraftTrackUpdated('MapPage', handleAircraftTrackUpdated);
+    }
 
     // Unmount
     return () => {
 
-      dataTrackerRef.current.stop();
-      dataTrackerRef.current.offStateVectorsUpdated('', handleStateVectorsUpdated);
+      if (openSkyAPIService) {
+
+        openSkyAPIService.offStateVectorsUpdated('MapPage', handleStateVectorsUpdated);
+        openSkyAPIService.offAircraftTrackUpdated('MapPage', handleAircraftTrackUpdated);
+      }
     }
   }, []);
 
   const handleStateVectorsUpdated = (data: IStateVectorData) => {
 
     setStateVectors(data);
+  };
 
-    if (selectedStateVectorRef.current) {
+  const handleAircraftTrackUpdated = (data: IAircraftTrack) => {
 
-      var newSelectedStateVector = data.states.find((stateVector, index) => stateVector.icao24 === selectedStateVectorRef.current!.icao24);
-      if (newSelectedStateVector) {
-
-        setSelectedStateVector(newSelectedStateVector);
-      }
-    }
+    setTrackedAircraft(data);
   };
 
   const handleMapChange = (viewState: ViewportProps, geoBounds: IMapGeoBounds) => {
 
-    dataTrackerRef.current.geoBounds = geoBounds;
+    if (openSkyAPIService)
+      openSkyAPIService.geoBounds = geoBounds;
   };
 
-  const handleAircraftSelect = (stateVector: IStateVector) => {
+  const handleAircraftSelect = (icao24: string) => {
 
-    dataTrackerRef.current.trackAircraft(stateVector.icao24);
-    setSelectedStateVector(stateVector);
+    if (openSkyAPIService)
+      openSkyAPIService.trackAircraft(icao24);
   };
 
   return (
@@ -90,6 +87,7 @@ const MapPage: React.FC<Props> = (props) => {
 
       <FlightMap
         stateVectors={stateVectors}
+        selectedAircraft={trackedAircraft}
         onMapChange={handleMapChange}
         onAircraftSelect={handleAircraftSelect} />
 
