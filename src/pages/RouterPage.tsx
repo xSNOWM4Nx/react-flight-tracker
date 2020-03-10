@@ -19,7 +19,7 @@ const RouterPage: React.FC<Props> = (props) => {
 
     <React.Fragment>
 
-      {/* Redirect to menu on unknown path */}
+      {/* Redirect to map on a unknown path */}
       {location.pathname === '/' ? <Redirect from="/" to="map" /> : null}
 
       <Switch>

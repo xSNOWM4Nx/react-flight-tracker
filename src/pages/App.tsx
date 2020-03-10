@@ -3,9 +3,11 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import grey from '@material-ui/core/colors/grey';
 import amber from '@material-ui/core/colors/amber';
+import { IService } from '@daniel.neuweiler/ts-lib-module';
 import { ApplicationProvider } from '@daniel.neuweiler/react-lib-module';
 
 import ProviderPage from './ProviderPage';
+import { OpenSkyAPIService } from './../services';
 
 import '@daniel.neuweiler/ts-lib-module/build/src/styles/default.style.css';
 import './../styles/app.style.css';
@@ -18,6 +20,13 @@ const theme = createMuiTheme({
 });
 
 function App() {
+
+  const handleInjectCustomServices = () => {
+
+    var services: Array<IService> = [];
+
+    return services;
+  };
 
   return (
 
@@ -32,7 +41,8 @@ function App() {
             </div>
           }>
 
-          <ApplicationProvider >
+          <ApplicationProvider
+            onInjectCustomServices={handleInjectCustomServices}>
             <ProviderPage />
           </ApplicationProvider>
         </Suspense>
