@@ -11,6 +11,7 @@ import { OpenSkyAPIService } from './../services';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@daniel.neuweiler/ts-lib-module/build/src/styles/default.style.css';
+import '@daniel.neuweiler/react-lib-module/dist/styles/default.style.css';
 import './../styles/app.style.css';
 
 const theme = createMuiTheme({

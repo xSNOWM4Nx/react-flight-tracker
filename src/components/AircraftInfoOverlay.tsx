@@ -1,6 +1,7 @@
 import React from 'react';
+import { Indicator1 } from '@daniel.neuweiler/react-lib-module';
 import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
-import { IStateVectorData, IStateVector } from '../opensky';
+import { IAircraftTrack, IStateVector } from '../opensky';
 
 import Card from '@material-ui/core/Card';
 import Typography from '@material-ui/core/Typography';
@@ -8,31 +9,36 @@ import FlightIcon from '@material-ui/icons/Flight';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    cardRoot: {
-      backgroundColor: theme.palette.primary.main,
+    overlayIndicatorRoot: {
+      position: 'relative',
       height: '100%',
-      borderRadius: 0
+      display: 'flex',
+      flexDirection: 'column',
+      alignContent: 'center',
+      alignItems: 'center',
+      justifyContent: 'center',
+      justifyItems: 'center'
     }
   }),
 );
 
 interface ILocalProps {
-  aircraftData?: IStateVector;
+  selectedAircraft?: IAircraftTrack;
 }
 type Props = ILocalProps;
 
-const AircraftData: React.FC<Props> = (props) => {
+const AircraftInfoOverlay: React.FC<Props> = (props) => {
 
   // External hooks
   const classes = useStyles();
   const theme = useTheme();
 
-  if (!props.aircraftData)
+  if (!props.selectedAircraft)
     return (
-      <Card
-        className={classes.cardRoot}>
-
-      </Card>
+      <div className={classes.overlayIndicatorRoot}>
+        <Indicator1
+          color={theme.palette.secondary.main} />
+      </div>
     );
 
   const renderHeader = (data: IStateVector) => {
@@ -162,22 +168,11 @@ const AircraftData: React.FC<Props> = (props) => {
 
   return (
 
-    <Card
-      className={classes.cardRoot}>
-
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          margin: theme.spacing(1)
-        }}>
-
-        {renderHeader(props.aircraftData)}
-        {renderFlightData(props.aircraftData)}
-      </div>
-    </Card>
-
+    <div className={classes.overlayIndicatorRoot}>
+      <Indicator1
+        color={theme.palette.secondary.main} />
+    </div>
   );
 }
 
-export default AircraftData;
+export default AircraftInfoOverlay;

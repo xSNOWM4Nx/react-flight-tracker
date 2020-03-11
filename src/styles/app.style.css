@@ -1,3 +1,15 @@
+.mapboxgl-ctrl-group button+button {
+  border-top: 1px solid
+}
+
+.mapboxgl-ctrl-group button:focus {
+  box-shadow:0 0 2px 2px #ffc107
+}
+
+.mapboxgl-ctrl-group button:focus:focus-visible {
+  box-shadow:0 0 2px 2px #ffc107
+}
+
 .red {
   background: red;
 }

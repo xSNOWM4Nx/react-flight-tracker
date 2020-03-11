@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { ViewportProps } from 'react-map-gl';
 import { ServiceContext } from '@daniel.neuweiler/react-lib-module';
@@ -75,6 +75,8 @@ const MapPage: React.FC<Props> = (props) => {
 
     if (openSkyAPIService)
       openSkyAPIService.trackAircraft(icao24);
+
+    setTrackedAircraft(undefined);
   };
 
   return (

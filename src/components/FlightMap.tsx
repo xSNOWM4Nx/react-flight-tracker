@@ -1,11 +1,44 @@
 import React, { useState, useRef } from 'react';
-import MapGL, { MapLoadEvent, PointerEvent, ViewportProps, ExtraState } from 'react-map-gl';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import MapGL, { FullscreenControl, NavigationControl, ScaleControl, MapLoadEvent, PointerEvent, ViewportProps, ExtraState } from 'react-map-gl';
 import { Feature } from 'geojson';
 import { svgToImageAsync } from '@daniel.neuweiler/ts-lib-module';
+import AircraftInfoOverlay from './AircraftInfoOverlay';
 import AircraftLayer from './AircraftLayer';
 import { Constants } from './../mapbox';
 import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
 import AircraftIcon from './../resources/airplanemode_active-24px.svg';
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    fullScreenControlContainer: {
+      position: 'absolute',
+      bottom: 140,
+      right: 0,
+      padding: '10px'
+    },
+    navigationControlContainer: {
+      position: 'absolute',
+      bottom: 38,
+      right: 0,
+      padding: '10px'
+    },
+    mapControl: {
+      backgroundColor: theme.palette.primary.main,
+    },
+    aircraftOverlayContainer: {
+      position: 'absolute',
+      bottom: 48,
+      left: 8,
+      padding: '10px',
+      height: 112,
+      width: 256,
+      borderRadius: 4,
+      backgroundColor: theme.palette.primary.main,
+      opacity: 0.8
+    }
+  }),
+);
 
 interface ILocalProps {
   stateVectors: IStateVectorData;
@@ -17,8 +50,12 @@ type Props = ILocalProps;
 
 const FlightMap: React.FC<Props> = (props) => {
 
+  // External hooks
+  const classes = useStyles();
+
   // States
   const [viewportProps, setViewportProps] = useState<ViewportProps | undefined>(undefined);
+  const [isAircraftInfoOverlayVisible, setAircraftInfoOverlayVisible] = useState(false);
 
   // Refs
   const mapRef = useRef<MapGL>(null);
@@ -69,6 +106,8 @@ const FlightMap: React.FC<Props> = (props) => {
 
         if (props.onAircraftSelect)
           props.onAircraftSelect(icao24);
+
+        setAircraftInfoOverlayVisible(true);
       }
     }
   };
@@ -113,6 +152,20 @@ const FlightMap: React.FC<Props> = (props) => {
       onLoad={handleLoad}
       onClick={handleClick}
       onViewportChange={handleViewportChange}>
+
+      <div className={classes.fullScreenControlContainer}>
+        <FullscreenControl className={classes.mapControl} />
+      </div>
+      <div className={classes.navigationControlContainer}>
+        <NavigationControl className={classes.mapControl} />
+      </div>
+
+      {isAircraftInfoOverlayVisible &&
+        <div className={classes.aircraftOverlayContainer}>
+          <AircraftInfoOverlay
+            selectedAircraft={props.selectedAircraft} />
+        </div>
+      }
 
       <AircraftLayer
         stateVectors={props.stateVectors}
