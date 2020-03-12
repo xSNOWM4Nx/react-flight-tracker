@@ -7,7 +7,12 @@ import AircraftInfoOverlay from './AircraftInfoOverlay';
 import AircraftLayer from './AircraftLayer';
 import { Constants } from './../mapbox';
 import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
-import AircraftIcon from './../resources/airplanemode_active-24px.svg';
+
+import FlightIcon from './../resources/flight-24px.svg';
+import FlightLandIcon from './../resources/flight_land-24px.svg';
+import FlightLandFlippedIcon from './../resources/flight_land-24px_flippedx.svg';
+import FlightTakeoffIcon from './../resources/flight_takeoff-24px.svg';
+import FlightTakeoffFlippedIcon from './../resources/flight_takeoff-24px_flippedx.svg';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -89,9 +94,25 @@ const FlightMap: React.FC<Props> = (props) => {
 
     var map = mapRef.current.getMap();
 
-    svgToImageAsync(AircraftIcon, 24, 24).then(image => {
+    svgToImageAsync(FlightIcon, 24, 24).then(image => {
 
-      map.addImage('aircraft-icon', image, { sdf: true });
+      map.addImage('flight-icon', image, { sdf: true });
+    });
+    svgToImageAsync(FlightLandIcon, 24, 24).then(image => {
+
+      map.addImage('flight-land-icon', image, { sdf: true });
+    });
+    svgToImageAsync(FlightLandFlippedIcon, 24, 24).then(image => {
+
+      map.addImage('flight-land-flipped-icon', image, { sdf: true });
+    });
+    svgToImageAsync(FlightTakeoffIcon, 24, 24).then(image => {
+
+      map.addImage('flight-takeoff-icon', image, { sdf: true });
+    });
+    svgToImageAsync(FlightTakeoffFlippedIcon, 24, 24).then(image => {
+
+      map.addImage('flight-takeoff-flipped-icon', image, { sdf: true });
     });
   };
 

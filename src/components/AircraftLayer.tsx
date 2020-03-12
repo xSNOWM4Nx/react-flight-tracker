@@ -36,15 +36,21 @@ const AircraftLayer: React.FC<Props> = (props) => {
         continue;
 
       // Get the index
-      var index = props.stateVectors.states.indexOf(stateVector);
+      const index = props.stateVectors.states.indexOf(stateVector);
 
       // Check for selection
       var isSelected = false;
       if (props.selectedAircraft)
         isSelected = stateVector.icao24 === props.selectedAircraft.icao24;
 
+      // Get true track
+      const trueTrack = stateVector.true_track ? stateVector.true_track : 0.0;
+
       // Get callsign
-      var callsign = stateVector.callsign ? stateVector.callsign : stateVector.icao24;
+      const callsign = stateVector.callsign ? stateVector.callsign : stateVector.icao24;
+
+      // Get is on ground
+      const isOnGround = stateVector.on_ground;
 
       // Get altitude
       var altitude = stateVector.baro_altitude;
@@ -53,35 +59,24 @@ const AircraftLayer: React.FC<Props> = (props) => {
       if (altitude === null)
         altitude = -1;
 
-      // Get velocity
-      var velocity = stateVector.velocity ? (stateVector.velocity * 3.6) : -1;
+      // Get velocity in km/h
+      const velocity = stateVector.velocity ? (stateVector.velocity * 3.6) : -1;
 
-      // Get velocity
-      var verticalRate = stateVector.vertical_rate ? stateVector.vertical_rate : 0;
-      var verticalRateText = '-';
-      if (verticalRate > 0)
-        verticalRateText = `Climbing [${verticalRate} m/s]`
-      if (verticalRate < 0)
-        verticalRateText = `Descending [${verticalRate} m/s]`
-
-      // Get color
-      var color = getColorByAltitude(altitude);
-      if (stateVector.on_ground)
-        color = '#e3f2fd';
-      if (isSelected)
-        color = theme.palette.secondary.main;
+      // Get vertical rate
+      const verticalRate = stateVector.vertical_rate ? stateVector.vertical_rate : 0;
 
       var properties: GeoJsonProperties = {
+        ['iconName']: getIconName(isOnGround, verticalRate, altitude, trueTrack),
+        ['rotation']: getRotation(trueTrack, verticalRate, altitude),
+        ['color']: getColor(isSelected, isOnGround, altitude),
         ['isSelected']: isSelected,
-        ['color']: color,
         ['icao24']: stateVector.icao24,
         ['callsign']: callsign,
         ['altitude']: defaultNumberFormatter.format(altitude) + " m",
-        ['velocity']: defaultNumberFormatter.format(velocity) + " km/h",
-        ['verticalRate']: verticalRateText,
-        ['true_track']: stateVector.true_track ? stateVector.true_track : 0.0
+        ['velocity']: defaultNumberFormatter.format(velocity) + " km/h"
       }
 
+      // Setup WGS84 coordinates
       var position: Position = [stateVector.longitude, stateVector.latitude];
 
       var point: Point = {
@@ -102,7 +97,47 @@ const AircraftLayer: React.FC<Props> = (props) => {
     return featureCollection;
   };
 
-  const getColorByAltitude = (altitude: number) => {
+  const getIconName = (isOnGround: boolean, verticalRate: number, altitude: number, trueTrack: number): string => {
+
+    if (isOnGround)
+      return 'flight-icon';
+
+    if (altitude <= 0)
+      return 'flight-icon';
+
+    if (verticalRate > 0 && altitude < 2000)
+      if (trueTrack < 180)
+        return 'flight-takeoff-icon';
+      else
+        return 'flight-takeoff-flipped-icon';
+
+    if (verticalRate < 0 && altitude < 2000)
+      if (trueTrack < 180)
+        return 'flight-land-icon';
+      else
+        return 'flight-land-flipped-icon';
+
+    return 'flight-icon';
+  };
+
+  const getRotation = (trueTrack: number, verticalRate: number, altitude: number) => {
+
+    if (verticalRate > 0 && altitude < 2000)
+      return 0.0;
+
+    if (verticalRate < 0 && altitude < 2000)
+      return 0.0;
+
+    return trueTrack;
+  };
+
+  const getColor = (isSelected: boolean, isOnGround: boolean, altitude: number) => {
+
+    if (isSelected)
+      return theme.palette.secondary.main;
+
+    if (isOnGround)
+      return '#e3f2fd';
 
     if (altitude < 500)
       return '#f44336';
@@ -123,7 +158,27 @@ const AircraftLayer: React.FC<Props> = (props) => {
       return '#8bc34a';
 
     return '#4caf50';
-  }
+  };
+
+  const getText = (): string | Expression | StyleFunction => {
+
+    var text: string | Expression | StyleFunction = '';
+    const simpleText = ["get", "callsign"] as Expression
+    const detailedText = ['format',
+      ["get", "callsign"], { "font-scale": 1.0 },
+      "\n", {},
+      ["get", "altitude"], { "font-scale": 0.75, "text-color": '#fff' },
+      "\n", {},
+      ["get", "velocity"], { "font-scale": 0.75, "text-color": '#fff' }
+    ] as StyleFunction;
+
+    if (props.zoom && props.zoom > 7)
+      text = simpleText;
+    if (props.zoom && props.zoom > 9)
+      text = detailedText;
+
+    return text;
+  };
 
   const getSymbolLayout = () => {
 
@@ -131,29 +186,18 @@ const AircraftLayer: React.FC<Props> = (props) => {
     if (props.zoom && props.zoom > 7)
       showText = true;
 
-    var text: string | Expression | StyleFunction = '';
+    var isconSize = 1.0;
+    if (props.zoom && props.zoom > 7)
+      isconSize = 1.3;
+    if (props.zoom && props.zoom > 9)
+      isconSize = 1.6;
 
-    var simpleText = ["get", "callsign"] as Expression
-    var detailedText = ['format',
-      ["get", "callsign"], { "font-scale": 1.0 },
-      "\n", {},
-      ["get", "altitude"], { "font-scale": 0.75, "text-color": '#fff' },
-      "\n", {},
-      ["get", "velocity"], { "font-scale": 0.75, "text-color": '#fff' },
-      "\n", {},
-      ["get", "verticalRate"], { "font-scale": 0.75, "text-color": '#fff' }
-    ] as StyleFunction;
-
-    if (showText)
-      text = simpleText;
-    if (showText && (props.zoom && props.zoom > 9))
-      text = detailedText;
-
-    var symbolLayout: SymbolLayout = {
-      "icon-image": "aircraft-icon",
+    const symbolLayout: SymbolLayout = {
+      "icon-image": ["get", "iconName"],
       "icon-allow-overlap": true,
-      "icon-rotate": ["get", "true_track"],
-      "text-field": showText ? text : '',
+      "icon-rotate": ["get", "rotation"],
+      "icon-size": isconSize,
+      "text-field": showText ? getText() : '',
       "text-optional": true,
       "text-allow-overlap": true,
       "text-anchor": showText ? 'top' : 'center',
