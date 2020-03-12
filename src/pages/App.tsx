@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import grey from '@material-ui/core/colors/grey';
-import amber from '@material-ui/core/colors/amber';
+import blue from '@material-ui/core/colors/blue';
 import { IService } from '@daniel.neuweiler/ts-lib-module';
 import { ApplicationProvider } from '@daniel.neuweiler/react-lib-module';
 
@@ -17,7 +17,7 @@ import './../styles/app.style.css';
 const theme = createMuiTheme({
   palette: {
     primary: grey,
-    secondary: amber,
+    secondary: blue,
   },
 });
 
