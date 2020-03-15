@@ -5,7 +5,7 @@ The goal of this project is to read the data from [OpenSky Network](https://open
 
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-![](resources\react-flight-tracker_prview.gif)
+![](resources/react-flight-tracker_prview.gif)
 
 ## 📦 Packages:
 - [ts-lib-module](https://github.com/xSNOWM4Nx/ts-lib-module)
