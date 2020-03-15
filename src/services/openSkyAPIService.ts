@@ -6,6 +6,10 @@ import {
 } from './../opensky/types';
 import { URL, Constants } from './../opensky/constants';
 
+const defaultStateInterval: number = 12000;
+const registeredSatetInterval: number = 6000;
+const metadataInterval: number = 5000;
+
 export interface IOpenSkyAPIService extends IService {
   geoBounds: IMapGeoBounds;
   onStateVectorsUpdated: (caller: string, callbackHandler: (stateVectors: IStateVectorData) => void) => void;
@@ -32,8 +36,15 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
   private isFetchingStateVectors: boolean = false;
   private onStateVectorUpdateSubscribers: Array<(stateVectors: IStateVectorData) => void> = [];
 
-  private fetchTrackedStateVectorIntervalID: number = 0;
-  private isFetchingTrackedStateVector: boolean = false;
+  private fetchAircraftStateIntervalID: number = 0;
+  private isFetchingAircraftStateVector: boolean = false;
+
+  private fetchAircraftRouteIntervalID: number = 0;
+  private isFetchingAircraftRoute: boolean = false;
+
+  private fetchAircraftDataIntervalID: number = 0;
+  private isFetchingAircraftData: boolean = false;
+
   private onAircraftTrackUpdateSubscribers: Array<(track: IAircraftTrack) => void> = [];
   private trackedAircraft: IAircraftTrack;
 
@@ -51,7 +62,8 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     };
 
     this.trackedAircraft = {
-      icao24: ''
+      icao24: '',
+      callsign: ''
     };
   };
 
@@ -86,7 +98,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     if (superResponse.state !== ResponseStateEnumeration.OK)
       return superResponse;
 
-    const fetchStateVectorInterval: number = this.hasCredentials ? 6000 : 12000;
+    const fetchStateVectorInterval: number = this.hasCredentials ? registeredSatetInterval : defaultStateInterval;
     this.fetchStateVectorsIntervalID = window.setInterval(this.fetchStateVectors, fetchStateVectorInterval);
 
     return superResponse;
@@ -95,7 +107,9 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
   public async stop() {
 
     clearInterval(this.fetchStateVectorsIntervalID);
-    clearInterval(this.fetchTrackedStateVectorIntervalID);
+    clearInterval(this.fetchAircraftStateIntervalID);
+    clearInterval(this.fetchAircraftRouteIntervalID);
+    clearInterval(this.fetchAircraftDataIntervalID);
 
     var superResponse = await super.stop();
     return superResponse;
@@ -128,22 +142,30 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
       this.logger.info(`Stop tracking for aircraft '${this.trackedAircraft.icao24}'.`);
     }
 
-    clearInterval(this.fetchTrackedStateVectorIntervalID);
+    clearInterval(this.fetchAircraftStateIntervalID);
+    clearInterval(this.fetchAircraftRouteIntervalID);
+    clearInterval(this.fetchAircraftDataIntervalID);
 
     this.trackedAircraft.icao24 = icao24;
+    this.trackedAircraft.callsign = '';
     this.logger.info(`Start tracking for aircraft '${icao24}'.`);
 
-    this.fetchStateVector();
+    this.fetchAircraftState();
+    // this.fetchAircraftRoute();
+    // this.fetchAircraftData();
 
-    const fetchStateVectorInterval: number = this.hasCredentials ? 6000 : 12000;
-    this.fetchTrackedStateVectorIntervalID = window.setInterval(this.fetchStateVector, fetchStateVectorInterval);
+    const fetchStateVectorInterval: number = this.hasCredentials ? registeredSatetInterval : defaultStateInterval;
+    this.fetchAircraftStateIntervalID = window.setInterval(this.fetchAircraftState, fetchStateVectorInterval);
   };
 
   public releaseTrack = (icao24: string) => {
 
-    clearInterval(this.fetchTrackedStateVectorIntervalID);
+    clearInterval(this.fetchAircraftStateIntervalID);
+    clearInterval(this.fetchAircraftRouteIntervalID);
+    clearInterval(this.fetchAircraftDataIntervalID);
 
     this.trackedAircraft.icao24 = '';
+    this.trackedAircraft.callsign = '';
     this.logger.info(`Stop tracking for aircraft '${icao24}'.`);
   };
 
@@ -238,7 +260,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
       })
   };
 
-  private fetchStateVector = () => {
+  private fetchAircraftState = () => {
 
     if (!this.restService)
       return;
@@ -246,12 +268,12 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     if (this.trackedAircraft.icao24 === '')
       return;
 
-    if (this.isFetchingTrackedStateVector)
+    if (this.isFetchingAircraftStateVector)
       return;
 
-    this.isFetchingTrackedStateVector = true;
+    this.isFetchingAircraftStateVector = true;
 
-    var targetURL = `${URL}/states/all?icao24=${this.trackedAircraft.icao24}`;
+    var targetURL = `${URL}/states/all?&icao24=${this.trackedAircraft.icao24}`;
 
     this.restService.get<IStateVectorRawData>(targetURL, {
       mode: 'cors',
@@ -266,15 +288,85 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
           if (mappedData.states.length > 0) {
 
             this.trackedAircraft.stateVector = mappedData.states[0]
+            this.trackedAircraft.callsign = this.trackedAircraft.stateVector.callsign ? this.trackedAircraft.stateVector.callsign : '';
+
             this.onAircraftTrackUpdateSubscribers.forEach(callback => callback(this.trackedAircraft))
           }
         }
 
-        this.isFetchingTrackedStateVector = false;
+        this.isFetchingAircraftStateVector = false;
       })
       .finally(() => {
 
-        this.isFetchingTrackedStateVector = false;
+        this.isFetchingAircraftStateVector = false;
+      })
+  };
+
+  private fetchAircraftRoute = () => {
+
+    if (!this.restService)
+      return;
+
+    if (this.trackedAircraft.callsign === '')
+      return;
+
+    if (this.isFetchingAircraftRoute)
+      return;
+
+    this.isFetchingAircraftRoute = true;
+
+    var targetURL = `${URL}/routes?callsign=${this.trackedAircraft.callsign}`;
+
+    this.restService.get<any>(targetURL, {
+      mode: 'no-cors',
+      credentials: this.hasCredentials ? 'include' : 'omit'
+    })
+      .then(response => {
+
+        if (response.payload) {
+
+          //Todo
+        }
+
+        this.isFetchingAircraftRoute = false;
+      })
+      .finally(() => {
+
+        this.isFetchingAircraftRoute = false;
+      })
+  };
+
+  private fetchAircraftData = () => {
+
+    if (!this.restService)
+      return;
+
+    if (this.trackedAircraft.icao24 === '')
+      return;
+
+    if (this.isFetchingAircraftData)
+      return;
+
+    this.isFetchingAircraftData = true;
+
+    var targetURL = `${URL}/metadata/aircraft/icao/${this.trackedAircraft.icao24}`;
+
+    this.restService.get<any>(targetURL, {
+      mode: 'no-cors',
+      credentials: 'include'
+    })
+      .then(response => {
+
+        if (response.payload) {
+
+          //Todo
+        }
+
+        this.isFetchingAircraftData = false;
+      })
+      .finally(() => {
+
+        this.isFetchingAircraftData = false;
       })
   };
 };

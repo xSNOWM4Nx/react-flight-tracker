@@ -52,5 +52,6 @@ export interface IAircraftFlight {
 
 export interface IAircraftTrack {
   icao24: string; // Unique ICAO 24-bit address of the transponder in hex string representation.
+  callsign: string | null; // Callsign of the vehicle (8 chars). Can be null if no callsign has been received.
   stateVector?: IStateVector;
 }
