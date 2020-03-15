@@ -71,7 +71,7 @@ const MapPage: React.FC<Props> = (props) => {
       openSkyAPIService.geoBounds = geoBounds;
   };
 
-  const handleAircraftSelect = (icao24: string) => {
+  const handleTrackAircraft = (icao24: string) => {
 
     if (openSkyAPIService)
       openSkyAPIService.trackAircraft(icao24);
@@ -79,21 +79,21 @@ const MapPage: React.FC<Props> = (props) => {
     setTrackedAircraft(undefined);
   };
 
+  const handleReleaseTrack = (icao24: string) => {
+
+    if (openSkyAPIService)
+      openSkyAPIService.releaseTrack(icao24);
+
+    setTrackedAircraft(undefined);
+  };
+
   return (
-    <div
-      style={{
-        height: '100%',
-        overflow: 'hidden',
-        margin: 8
-      }}>
-
-      <FlightMap
-        stateVectors={stateVectors}
-        selectedAircraft={trackedAircraft}
-        onMapChange={handleMapChange}
-        onAircraftSelect={handleAircraftSelect} />
-
-    </div>
+    <FlightMap
+      stateVectors={stateVectors}
+      selectedAircraft={trackedAircraft}
+      onMapChange={handleMapChange}
+      onTrackAircraft={handleTrackAircraft}
+      onReleaseTrack={handleReleaseTrack} />
   )
 };
 

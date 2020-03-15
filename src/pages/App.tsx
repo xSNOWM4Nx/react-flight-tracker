@@ -1,25 +1,30 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-import grey from '@material-ui/core/colors/grey';
+import { ThemeProvider, createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
 import blue from '@material-ui/core/colors/blue';
+import pink from '@material-ui/core/colors/pink';
 import { IService } from '@daniel.neuweiler/ts-lib-module';
 import { ApplicationProvider } from '@daniel.neuweiler/react-lib-module';
 
 import ProviderPage from './ProviderPage';
-import { OpenSkyAPIService } from './../services';
+import { OpenSkyAPIService, GeospatialService } from './../services';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@daniel.neuweiler/ts-lib-module/build/src/styles/default.style.css';
 import '@daniel.neuweiler/react-lib-module/dist/styles/default.style.css';
 import './../styles/app.style.css';
 
-const theme = createMuiTheme({
+var theme = createMuiTheme({
   palette: {
-    primary: grey,
-    secondary: blue,
+    primary: blue,
+    secondary: pink,
+  },
+  typography: {
+    htmlFontSize: 10,
   },
 });
+
+theme = responsiveFontSizes(theme);
 
 function App() {
 
@@ -29,6 +34,9 @@ function App() {
 
     var openSkyAPIService = new OpenSkyAPIService(process.env.REACT_APP_OSKY_USERNAME, process.env.REACT_APP_OSKY_PASSWORD);
     services.push(openSkyAPIService);
+
+    var geospatialService = new GeospatialService();
+    services.push(geospatialService);
 
     return services;
   };

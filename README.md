@@ -5,6 +5,8 @@ The goal of this project is to read the data from [OpenSky Network](https://open
 
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
+![](resources\react-flight-tracker_prview.gif)
+
 ## 📦 Packages:
 - [ts-lib-module](https://github.com/xSNOWM4Nx/ts-lib-module)
 - [react-lib-module](https://github.com/xSNOWM4Nx/react-lib-module)
@@ -21,9 +23,9 @@ The goal of this project is to read the data from [OpenSky Network](https://open
 - Fetching flight data from [OpenSky Network](https://opensky-network.org/).
 
 ## 🔌 Usage:
-You will need a [mapbox](https://www.mapbox.com/) access token in order to display the map. For development and own-use it is perfectly fine to use their free option.
+To use the maps from [mapbox](https://www.mapbox.com/), you need an appropriate token. You can create one on their website by registering there. Registration is free and all relevant things are covered for development purposes.
 
-In order to have more recent flight data around ~5 seconds, create a free account on [OpenSky Network](https://opensky-network.org/). If you do not have an account the flight data will be around ~10 seconds old.
+For the use of the flight data via [OpenSky Network](https://opensky-network.org/), I would also recommend creating a corresponding account on their website. The flight data is then provided with a delay of ~5 seconds. Without an account, the delay is ~10 seconds.
 
 Start by cloning the repository and install the packages:
 ```

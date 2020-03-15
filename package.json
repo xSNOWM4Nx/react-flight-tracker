@@ -12,6 +12,8 @@
     "react-map-gl": "^5.2.3",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.0",
+    "typeface-roboto": "0.0.75",
+    "@turf/destination": "^6.0.1",
     "typescript": "^3.8.3"
   },
   "devDependencies": {

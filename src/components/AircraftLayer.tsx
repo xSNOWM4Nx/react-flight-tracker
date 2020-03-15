@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useRef, useState, useContext, useEffect } from 'react';
 import { Source, Layer } from 'react-map-gl';
-import { FeatureCollection, Feature, GeoJsonProperties, Point, Position } from 'geojson';
+import { FeatureCollection, Geometry, Feature, GeoJsonProperties, Point, Position } from 'geojson';
 import { SymbolLayout, SymbolPaint, Expression, StyleFunction } from 'mapbox-gl';
+import { ServiceContext } from '@daniel.neuweiler/react-lib-module';
 import { useTheme } from '@material-ui/core/styles';
 
+import { IGeospatialService } from './../services';
 import { IStateVectorData, IAircraftTrack, IStateVector } from '../opensky';
+import { DefaultNumberFormatter, getIconName, getRotation, getColor } from '../helpers';
 
 interface ILocalProps {
   stateVectors: IStateVectorData;
@@ -13,14 +16,57 @@ interface ILocalProps {
 }
 type Props = ILocalProps;
 
-const defaultNumberFormatter = new Intl.NumberFormat('de-CH', { style: 'decimal', useGrouping: false, maximumFractionDigits: 1 });
-
 const AircraftLayer: React.FC<Props> = (props) => {
 
   // External hooks
   const theme = useTheme();
 
-  const createFeatureCollection = () => {
+  // States
+  const [pathPredictions, setPathPredictions] = useState<Array<Feature<Point, GeoJsonProperties>>>([]);
+
+  // Contexts
+  const serviceContext = useContext(ServiceContext)
+  const geospatialService = serviceContext.getService<IGeospatialService>('GeospatialService');
+
+  // Effects
+  useEffect(() => {
+
+    // Mount
+    if (geospatialService) {
+
+      geospatialService.onPathPredictionUpdated('AircraftLayer', handlePathPredictionUpdated);
+    }
+
+    // Unmount
+    return () => {
+
+      if (geospatialService) {
+
+        geospatialService.stopPathPrediction();
+        geospatialService.offPathPredictionUpdated('AircraftLayer', handlePathPredictionUpdated);
+      }
+    }
+  }, []);
+  useEffect(() => {
+
+    if (!geospatialService)
+      return;
+
+    if (props.zoom && props.zoom < 7) {
+      geospatialService.stopPathPrediction();
+    }
+    else {
+      geospatialService.restartPathPrediction(props.stateVectors);
+    }
+
+  }, [props.stateVectors]);
+
+  const handlePathPredictionUpdated = (destinations: Array<Feature<Point, GeoJsonProperties>>) => {
+
+    setPathPredictions(destinations);
+  };
+
+  const createFeatureCollection = (pathPredictions: Array<Feature<Point, GeoJsonProperties>>) => {
 
     var featureCollection: FeatureCollection = {
       type: 'FeatureCollection',
@@ -29,11 +75,13 @@ const AircraftLayer: React.FC<Props> = (props) => {
 
     for (var stateVector of props.stateVectors.states) {
 
-      if (!stateVector.latitude)
+      if (!stateVector.latitude) {
         continue;
+      }
 
-      if (!stateVector.longitude)
+      if (!stateVector.longitude) {
         continue;
+      }
 
       // Get the index
       const index = props.stateVectors.states.indexOf(stateVector);
@@ -43,14 +91,8 @@ const AircraftLayer: React.FC<Props> = (props) => {
       if (props.selectedAircraft)
         isSelected = stateVector.icao24 === props.selectedAircraft.icao24;
 
-      // Get true track
-      const trueTrack = stateVector.true_track ? stateVector.true_track : 0.0;
-
       // Get callsign
       const callsign = stateVector.callsign ? stateVector.callsign : stateVector.icao24;
-
-      // Get is on ground
-      const isOnGround = stateVector.on_ground;
 
       // Get altitude
       var altitude = stateVector.baro_altitude;
@@ -62,29 +104,49 @@ const AircraftLayer: React.FC<Props> = (props) => {
       // Get velocity in km/h
       const velocity = stateVector.velocity ? (stateVector.velocity * 3.6) : -1;
 
+      // Get true track
+      const trueTrack = stateVector.true_track ? stateVector.true_track : 0.0;
+
       // Get vertical rate
-      const verticalRate = stateVector.vertical_rate ? stateVector.vertical_rate : 0;
+      const verticalRate = stateVector.vertical_rate ? stateVector.vertical_rate : 0.0;
+
+      // Get is on ground
+      const isOnGround = stateVector.on_ground;
+
+      // Claculate color
+      var color = getColor(altitude);
+      if (isOnGround)
+        color = '#e3f2fd';
+      if (isSelected)
+        color = theme.palette.primary.main;
 
       var properties: GeoJsonProperties = {
         ['iconName']: getIconName(isOnGround, verticalRate, altitude, trueTrack),
         ['rotation']: getRotation(trueTrack, verticalRate, altitude),
-        ['color']: getColor(isSelected, isOnGround, altitude),
+        ['color']: color,
         ['isSelected']: isSelected,
         ['icao24']: stateVector.icao24,
         ['callsign']: callsign,
-        ['altitude']: defaultNumberFormatter.format(altitude) + " m",
-        ['velocity']: defaultNumberFormatter.format(velocity) + " km/h"
+        ['altitude']: DefaultNumberFormatter.format(altitude) + " m",
+        ['velocity']: DefaultNumberFormatter.format(velocity) + " km/h"
       }
 
       // Setup WGS84 coordinates
       var position: Position = [stateVector.longitude, stateVector.latitude];
+
+      if (pathPredictions.length > 0) {
+
+        const feature = pathPredictions.find(feature => feature.properties !== null && feature.properties['icao24']! === stateVector.icao24);
+        if (feature)
+          position = feature.geometry.coordinates;
+      }
 
       var point: Point = {
         type: 'Point',
         coordinates: position
       };
 
-      var feature: Feature = {
+      var feature: Feature<Point, GeoJsonProperties> = {
         type: 'Feature',
         id: `${index}.${stateVector.icao24}`,
         geometry: point,
@@ -95,69 +157,6 @@ const AircraftLayer: React.FC<Props> = (props) => {
     }
 
     return featureCollection;
-  };
-
-  const getIconName = (isOnGround: boolean, verticalRate: number, altitude: number, trueTrack: number): string => {
-
-    if (isOnGround)
-      return 'flight-icon';
-
-    if (altitude <= 0)
-      return 'flight-icon';
-
-    if (verticalRate > 0 && altitude < 2000)
-      if (trueTrack < 180)
-        return 'flight-takeoff-icon';
-      else
-        return 'flight-takeoff-flipped-icon';
-
-    if (verticalRate < 0 && altitude < 2000)
-      if (trueTrack < 180)
-        return 'flight-land-icon';
-      else
-        return 'flight-land-flipped-icon';
-
-    return 'flight-icon';
-  };
-
-  const getRotation = (trueTrack: number, verticalRate: number, altitude: number) => {
-
-    if (verticalRate > 0 && altitude < 2000)
-      return 0.0;
-
-    if (verticalRate < 0 && altitude < 2000)
-      return 0.0;
-
-    return trueTrack;
-  };
-
-  const getColor = (isSelected: boolean, isOnGround: boolean, altitude: number) => {
-
-    if (isSelected)
-      return theme.palette.secondary.main;
-
-    if (isOnGround)
-      return '#e3f2fd';
-
-    if (altitude < 500)
-      return '#f44336';
-
-    if (altitude < 1500)
-      return '#ff9800';
-
-    if (altitude < 3000)
-      return '#ffc107';
-
-    if (altitude < 6000)
-      return '#ffeb3b';
-
-    if (altitude < 9000)
-      return '#cddc39';
-
-    if (altitude < 12000)
-      return '#8bc34a';
-
-    return '#4caf50';
   };
 
   const getText = (): string | Expression | StyleFunction => {
@@ -227,7 +226,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
 
     <Source
       type="geojson"
-      data={createFeatureCollection()}>
+      data={createFeatureCollection(pathPredictions)}>
 
       <Layer
         id='aircrafts'
