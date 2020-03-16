@@ -6,7 +6,7 @@ import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 
 import { IAircraftTrack, IStateVector } from '../opensky';
-import { DefaultNumberFormatter, getIcon, getRotation, getStatusText } from '../helpers';
+import { getFormattedValue, getIcon, getRotation, getStatusText } from '../helpers';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -280,7 +280,7 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
             {'Altitude'}
           </div>
           <div className={classes.textValue}>
-            {`${DefaultNumberFormatter.format(altitude)} m [${DefaultNumberFormatter.format(altitude * 3.28084)} ft.]`}
+            {`${getFormattedValue(altitude, 1)} m [${getFormattedValue(altitude * 3.28084, 1)} ft.]`}
           </div>
         </div>
 
@@ -291,7 +291,18 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
             {'Velocity'}
           </div>
           <div className={classes.textValue}>
-            {`${DefaultNumberFormatter.format(velocity * 3.6)} km/h [${DefaultNumberFormatter.format(velocity)} m/s]`}
+            {`${getFormattedValue(velocity * 3.6, 1)} km/h [${getFormattedValue(velocity, 1)} m/s]`}
+          </div>
+        </div>
+
+        <div className={classes.textSpace} />
+
+        <div className={classes.textContainer}>
+          <div className={classes.textDescription}>
+            {'Longitude / Latitude'}
+          </div>
+          <div className={classes.textValue}>
+            {`${getFormattedValue(stateVector.longitude ? stateVector.longitude : -1, 3)} ° / ${getFormattedValue(stateVector.latitude ? stateVector.latitude : -1, 3)}`}
           </div>
         </div>
 
@@ -302,7 +313,7 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
             {'Rotation'}
           </div>
           <div className={classes.textValue}>
-            {`${DefaultNumberFormatter.format(trueTrack)} °`}
+            {`${getFormattedValue(trueTrack, 1)} °`}
           </div>
         </div>
 
@@ -313,7 +324,7 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
             {'Vertical rate'}
           </div>
           <div className={classes.textValue}>
-            {`${DefaultNumberFormatter.format(verticalRate)} m/s`}
+            {`${getFormattedValue(verticalRate, 1)} m/s`}
           </div>
         </div>
 

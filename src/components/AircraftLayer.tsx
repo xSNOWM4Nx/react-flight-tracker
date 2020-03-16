@@ -7,7 +7,7 @@ import { useTheme } from '@material-ui/core/styles';
 
 import { IGeospatialService } from './../services';
 import { IStateVectorData, IAircraftTrack, IStateVector } from '../opensky';
-import { DefaultNumberFormatter, getIconName, getRotation, getColor } from '../helpers';
+import { getFormattedValue, getIconName, getRotation, getColor } from '../helpers';
 
 interface ILocalProps {
   stateVectors: IStateVectorData;
@@ -59,7 +59,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
       geospatialService.restartPathPrediction(props.stateVectors);
     }
 
-  }, [props.stateVectors]);
+  }, [props.stateVectors, props.zoom]);
 
   const handlePathPredictionUpdated = (destinations: Array<Feature<Point, GeoJsonProperties>>) => {
 
@@ -127,8 +127,8 @@ const AircraftLayer: React.FC<Props> = (props) => {
         ['isSelected']: isSelected,
         ['icao24']: stateVector.icao24,
         ['callsign']: callsign,
-        ['altitude']: DefaultNumberFormatter.format(altitude) + " m",
-        ['velocity']: DefaultNumberFormatter.format(velocity) + " km/h"
+        ['altitude']: getFormattedValue(altitude, 1) + " m",
+        ['velocity']: getFormattedValue(velocity, 1) + " km/h"
       }
 
       // Setup WGS84 coordinates

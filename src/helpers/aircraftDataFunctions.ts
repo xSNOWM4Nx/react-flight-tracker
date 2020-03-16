@@ -4,8 +4,13 @@ import { ReactComponent as FlightLandFlippedIcon } from './../resources/flight_l
 import { ReactComponent as FlightTakeoffIcon } from './../resources/flight_takeoff-24px.svg';
 import { ReactComponent as FlightTakeoffFlippedIcon } from './../resources/flight_takeoff-24px_flippedx.svg';
 
-export const DefaultNumberFormatter = new Intl.NumberFormat('de-CH', { style: 'decimal', useGrouping: false, maximumFractionDigits: 1 });
 const altitudeStateLimit = 1000;
+
+export const getFormattedValue = (rawValue: number, maxFractionDigits: number) => {
+
+  const NumberFormatter = new Intl.NumberFormat('de-CH', { style: 'decimal', useGrouping: false, maximumFractionDigits: maxFractionDigits });
+  return NumberFormatter.format(rawValue);
+};
 
 export const getIconName = (isOnGround: boolean, verticalRate: number, altitude: number, trueTrack: number): string => {
 
