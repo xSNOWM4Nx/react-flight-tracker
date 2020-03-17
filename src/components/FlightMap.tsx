@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import MapGL, { FullscreenControl, NavigationControl, ScaleControl, MapLoadEvent, PointerEvent, ViewportProps, ExtraState } from 'react-map-gl';
+import MapGL, { FullscreenControl, NavigationControl, MapLoadEvent, PointerEvent, ViewportProps, ExtraState } from 'react-map-gl';
 import { Feature } from 'geojson';
 import { svgToImageAsync } from '@daniel.neuweiler/ts-lib-module';
 import AircraftInfoOverlay from './AircraftInfoOverlay';
@@ -66,6 +66,15 @@ const FlightMap: React.FC<Props> = (props) => {
 
   // Refs
   const mapRef = useRef<MapGL>(null);
+
+  // Effects
+  useEffect(() => {
+
+    const mapGeoBounds = getMapGeoBounds();
+    if (props.onMapChange && viewportProps)
+      props.onMapChange(viewportProps, mapGeoBounds);
+
+  }, [mapRef.current]);
 
   const getMapGeoBounds = () => {
 
@@ -140,6 +149,7 @@ const FlightMap: React.FC<Props> = (props) => {
     const mapGeoBounds = getMapGeoBounds();
     if (props.onMapChange)
       props.onMapChange(viewState, mapGeoBounds);
+
   };
 
   // Helpers

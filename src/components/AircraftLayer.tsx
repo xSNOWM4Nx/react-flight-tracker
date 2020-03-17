@@ -1,4 +1,4 @@
-import React, { useRef, useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Source, Layer } from 'react-map-gl';
 import { FeatureCollection, Geometry, Feature, GeoJsonProperties, Point, Position } from 'geojson';
 import { SymbolLayout, SymbolPaint, Expression, StyleFunction } from 'mapbox-gl';
@@ -6,7 +6,7 @@ import { ServiceContext } from '@daniel.neuweiler/react-lib-module';
 import { useTheme } from '@material-ui/core/styles';
 
 import { IGeospatialService } from './../services';
-import { IStateVectorData, IAircraftTrack, IStateVector } from '../opensky';
+import { IStateVectorData, IAircraftTrack } from '../opensky';
 import { getFormattedValue, getIconName, getRotation, getColor } from '../helpers';
 
 interface ILocalProps {
@@ -22,6 +22,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
   const theme = useTheme();
 
   // States
+  const [featureCollection, setFeatureCollection] = useState<FeatureCollection | undefined>(undefined);
   const [pathPredictions, setPathPredictions] = useState<Array<Feature<Point, GeoJsonProperties>>>([]);
 
   // Contexts
@@ -49,17 +50,32 @@ const AircraftLayer: React.FC<Props> = (props) => {
   }, []);
   useEffect(() => {
 
-    if (!geospatialService)
-      return;
+    createFeatureCollection(pathPredictions).then((featureCollection) => {
 
-    if (props.zoom && props.zoom < 7) {
-      geospatialService.stopPathPrediction();
-    }
-    else {
-      geospatialService.restartPathPrediction(props.stateVectors);
-    }
+      setFeatureCollection(featureCollection);
 
-  }, [props.stateVectors, props.zoom]);
+      if (!geospatialService)
+        return;
+
+      if (props.stateVectors.states.length > 1000) {
+        geospatialService.stopPathPrediction();
+      }
+      else {
+        geospatialService.restartPathPrediction(props.stateVectors);
+      }
+    })
+
+
+
+  }, [props.stateVectors]);
+  useEffect(() => {
+
+    createFeatureCollection(pathPredictions).then((featureCollection) => {
+
+      setFeatureCollection(featureCollection);
+    })
+
+  }, [pathPredictions]);
 
   const handlePathPredictionUpdated = (destinations: Array<Feature<Point, GeoJsonProperties>>) => {
 
@@ -68,95 +84,99 @@ const AircraftLayer: React.FC<Props> = (props) => {
 
   const createFeatureCollection = (pathPredictions: Array<Feature<Point, GeoJsonProperties>>) => {
 
-    var featureCollection: FeatureCollection = {
-      type: 'FeatureCollection',
-      features: []
-    };
+    return new Promise<FeatureCollection>((res, rej) => {
 
-    for (var stateVector of props.stateVectors.states) {
-
-      if (!stateVector.latitude) {
-        continue;
-      }
-
-      if (!stateVector.longitude) {
-        continue;
-      }
-
-      // Get the index
-      const index = props.stateVectors.states.indexOf(stateVector);
-
-      // Check for selection
-      var isSelected = false;
-      if (props.selectedAircraft)
-        isSelected = stateVector.icao24 === props.selectedAircraft.icao24;
-
-      // Get callsign
-      const callsign = stateVector.callsign ? stateVector.callsign : stateVector.icao24;
-
-      // Get altitude
-      var altitude = stateVector.baro_altitude;
-      if (altitude === null)
-        altitude = stateVector.geo_altitude;
-      if (altitude === null)
-        altitude = -1;
-
-      // Get velocity in km/h
-      const velocity = stateVector.velocity ? (stateVector.velocity * 3.6) : -1;
-
-      // Get true track
-      const trueTrack = stateVector.true_track ? stateVector.true_track : 0.0;
-
-      // Get vertical rate
-      const verticalRate = stateVector.vertical_rate ? stateVector.vertical_rate : 0.0;
-
-      // Get is on ground
-      const isOnGround = stateVector.on_ground;
-
-      // Claculate color
-      var color = getColor(altitude);
-      if (isOnGround)
-        color = '#e3f2fd';
-      if (isSelected)
-        color = theme.palette.primary.main;
-
-      var properties: GeoJsonProperties = {
-        ['iconName']: getIconName(isOnGround, verticalRate, altitude, trueTrack),
-        ['rotation']: getRotation(trueTrack, verticalRate, altitude),
-        ['color']: color,
-        ['isSelected']: isSelected,
-        ['icao24']: stateVector.icao24,
-        ['callsign']: callsign,
-        ['altitude']: getFormattedValue(altitude, 1) + " m",
-        ['velocity']: getFormattedValue(velocity, 1) + " km/h"
-      }
-
-      // Setup WGS84 coordinates
-      var position: Position = [stateVector.longitude, stateVector.latitude];
-
-      if (pathPredictions.length > 0) {
-
-        const feature = pathPredictions.find(feature => feature.properties !== null && feature.properties['icao24']! === stateVector.icao24);
-        if (feature)
-          position = feature.geometry.coordinates;
-      }
-
-      var point: Point = {
-        type: 'Point',
-        coordinates: position
+      var featureCollection: FeatureCollection = {
+        type: 'FeatureCollection',
+        features: []
       };
 
-      var feature: Feature<Point, GeoJsonProperties> = {
-        type: 'Feature',
-        id: `${index}.${stateVector.icao24}`,
-        geometry: point,
-        properties: properties
+      for (var stateVector of props.stateVectors.states) {
+
+        if (!stateVector.latitude) {
+          continue;
+        }
+
+        if (!stateVector.longitude) {
+          continue;
+        }
+
+        // Get the index
+        const index = props.stateVectors.states.indexOf(stateVector);
+
+        // Check for selection
+        var isSelected = false;
+        if (props.selectedAircraft)
+          isSelected = stateVector.icao24 === props.selectedAircraft.icao24;
+
+        // Get callsign
+        const callsign = stateVector.callsign ? stateVector.callsign : stateVector.icao24;
+
+        // Get altitude
+        var altitude = stateVector.geo_altitude;
+        if ((altitude === null) || (altitude < 0))
+          altitude = stateVector.baro_altitude;
+        if ((altitude === null) || (altitude < 0))
+          altitude = 0;
+
+        // Get velocity in km/h
+        const velocity = stateVector.velocity ? (stateVector.velocity * 3.6) : -1;
+
+        // Get true track
+        const trueTrack = stateVector.true_track ? stateVector.true_track : 0.0;
+
+        // Get vertical rate
+        const verticalRate = stateVector.vertical_rate ? stateVector.vertical_rate : 0.0;
+
+        // Get is on ground
+        const isOnGround = stateVector.on_ground;
+
+        // Claculate color
+        var color = getColor(altitude);
+        if (isOnGround)
+          color = '#e3f2fd';
+        if (isSelected)
+          color = theme.palette.primary.main;
+
+        var properties: GeoJsonProperties = {
+          ['iconName']: getIconName(isOnGround, verticalRate, altitude, trueTrack),
+          ['rotation']: getRotation(trueTrack, verticalRate, altitude),
+          ['color']: color,
+          ['isSelected']: isSelected,
+          ['icao24']: stateVector.icao24,
+          ['callsign']: callsign,
+          ['altitude']: getFormattedValue(altitude, 1) + " m",
+          ['velocity']: getFormattedValue(velocity, 1) + " km/h"
+        }
+
+        // Setup WGS84 coordinates
+        var position: Position = [stateVector.longitude, stateVector.latitude];
+
+        if (pathPredictions.length > 0) {
+
+          const feature = pathPredictions.find(feature => feature.properties !== null && feature.properties['icao24']! === stateVector.icao24);
+          if (feature)
+            position = feature.geometry.coordinates;
+        }
+
+        var point: Point = {
+          type: 'Point',
+          coordinates: position
+        };
+
+        var feature: Feature<Point, GeoJsonProperties> = {
+          type: 'Feature',
+          id: `${index}.${stateVector.icao24}`,
+          geometry: point,
+          properties: properties
+        }
+
+        featureCollection.features.push(feature);
       }
 
-      featureCollection.features.push(feature);
-    }
+      res(featureCollection);
+    });
 
-    return featureCollection;
   };
 
   const getText = (): string | Expression | StyleFunction => {
@@ -226,9 +246,9 @@ const AircraftLayer: React.FC<Props> = (props) => {
 
     <Source
       type="geojson"
-      data={createFeatureCollection(pathPredictions)}>
+      data={featureCollection}>
 
-      <Layer
+      < Layer
         id='aircrafts'
         type='symbol'
         source='geojson'

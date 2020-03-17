@@ -4,6 +4,9 @@ import destination from '@turf/destination';
 
 import { IStateVectorData, IAircraftTrack, IStateVector } from '../opensky';
 
+// Earth radius in meters
+const earthRadius = 6371008.8;
+
 export interface IGeospatialService extends IService {
   restartPathPrediction: (stateVectors: IStateVectorData) => void;
   stopPathPrediction: () => void;
@@ -66,16 +69,41 @@ export class GeospatialService extends Service implements IGeospatialService {
 
   private calculatePath = (stateVectors: IStateVectorData) => {
 
-    this.pathPredictionCounter += this.pathPredictionInterval;
     const features: Array<Feature<Point, GeoJsonProperties>> = [];
 
     for (var stateVector of stateVectors.states) {
 
+      // Setup last position time in ms
+      var lastPositionTime = this.pathPredictionCounter
+
+      // Setup altitude in m
+      var altitude = stateVector.geo_altitude;
+      if ((altitude === null) || (altitude < 0))
+        altitude = stateVector.baro_altitude;
+      if ((altitude === null) || (altitude < 0))
+        altitude = 0;
+
+      // Setup vertical rate
+      var verticalRate = stateVector.vertical_rate ? stateVector.vertical_rate : 0.0;
+      if (verticalRate < 0)
+        verticalRate *= -1;
+
       const origin: Array<number> = [stateVector.longitude ? stateVector.longitude : 0, stateVector.latitude ? stateVector.latitude : 0]
       const velocity = stateVector.velocity ? stateVector.velocity : 0;
-      const distance = (velocity * this.pathPredictionCounter) / 1000;
+
+      var distance = (velocity * lastPositionTime) / 1000;
+
+      // Try to adjust the distance to the vertical rate
+      if (verticalRate !== 0)
+        distance = distance - (verticalRate * (lastPositionTime / 1000));
+
+      // Try to adjust the distance to the altitude
+      if (altitude > 0)
+        distance = (distance * earthRadius) / (earthRadius + altitude);
+
       const bearing = stateVector.true_track ? stateVector.true_track : 0;
 
+      // Calculate the destination
       const feature = destination(
         origin,
         distance,
@@ -85,14 +113,20 @@ export class GeospatialService extends Service implements IGeospatialService {
         }
       );
 
+      // Adding the ICAO24 prop to the feature so that a corresponding assignment is possible later
       var properties: GeoJsonProperties = {
         ['icao24']: stateVector.icao24
       };
-
       feature.properties = properties;
+
+      // Push the feature to the collection
       features.push(feature);
     }
 
+    // Increase counter time
+    this.pathPredictionCounter += this.pathPredictionInterval;
+
+    // Execute callbacks
     this.onPathPredictionUpdateSubscribers.forEach(callback => callback(features))
   };
 }

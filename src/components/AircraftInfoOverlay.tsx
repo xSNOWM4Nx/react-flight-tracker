@@ -90,8 +90,8 @@ const useStyles = makeStyles((theme: Theme) =>
       alignContent: 'flex-start'
     },
     textSpace: {
-      height: 4,
-      minHeight: 4
+      height: 8,
+      minHeight: 8
     },
     textDescription: {
       fontSize: 12,
@@ -117,34 +117,44 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
   const theme = useTheme();
 
   // States
-  const [updateTime, setUpdateTime] = useState(0);
+  const [lastPositionPastSeconds, setLastPositionPastSeconds] = useState(0);
 
   // Refs
   const updateIntverlIDRef = useRef(0);
-  const updateTimeRef = useRef(updateTime);
-  updateTimeRef.current = updateTime;
+  const lastPositionPastSecondsRef = useRef(lastPositionPastSeconds);
+  lastPositionPastSecondsRef.current = lastPositionPastSeconds;
 
   // Effects
   useEffect(() => {
 
+    // Mount
+
+    // Unmount
+    return () => {
+
+      clearInterval(updateIntverlIDRef.current);
+    }
+  }, []);
+  useEffect(() => {
+
+    if (!props.selectedAircraft || !props.selectedAircraft.stateVector) {
+
+      clearInterval(updateIntverlIDRef.current);
+      return;
+    }
+
     clearInterval(updateIntverlIDRef.current);
-    setUpdateTime(0);
+
+    const lastPositionSeconds = props.selectedAircraft.stateVector.time_position ? props.selectedAircraft.stateVector.time_position : Math.floor(Date.now() / 1000);
+    setLastPositionPastSeconds(Math.floor(Date.now() / 1000) - lastPositionSeconds);
 
     updateIntverlIDRef.current = window.setInterval(handleUpdate, 1000);
 
   }, [props.selectedAircraft?.stateVector]);
 
-  if (!props.selectedAircraft)
-    return (
-      <div className={classes.overlayIndicatorRoot}>
-        <Indicator1
-          color={theme.palette.primary.main} />
-      </div>
-    );
-
   const handleUpdate = () => {
 
-    setUpdateTime(updateTimeRef.current + 1);
+    setLastPositionPastSeconds(lastPositionPastSecondsRef.current + 1);
   };
 
   const renderHeader = () => {
@@ -158,11 +168,11 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
     const stateVector = props.selectedAircraft.stateVector;
 
     // Get altitude
-    var altitude = stateVector.baro_altitude;
-    if (altitude === null)
-      altitude = stateVector.geo_altitude;
-    if (altitude === null)
-      altitude = -1;
+    var altitude = stateVector.geo_altitude;
+    if ((altitude === null) || (altitude < 0))
+      altitude = stateVector.baro_altitude;
+    if ((altitude === null) || (altitude < 0))
+      altitude = 0;
 
     // Get vertical rate
     const verticalRate = stateVector.vertical_rate ? stateVector.vertical_rate : 0;
@@ -232,26 +242,28 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
       hour: 'numeric', minute: 'numeric', second: 'numeric'
     };
 
-    var lastPositionUpdate = '?';
+    var lastPositionTime = '?';
     if (stateVector.time_position !== null) {
 
       var date = new Date(stateVector.time_position * 1000);
-      lastPositionUpdate = new Intl.DateTimeFormat('de-CH', options).format(date)
+      lastPositionTime = new Intl.DateTimeFormat('de-CH', options).format(date)
     }
 
-    var lastUpdate = '?';
+    var lastContactTime = '?';
     if (stateVector.last_contact !== null) {
 
       var lastContactDate = new Date(stateVector.last_contact * 1000);
-      lastUpdate = new Intl.DateTimeFormat('de-CH', options).format(lastContactDate)
+      lastContactTime = new Intl.DateTimeFormat('de-CH', options).format(lastContactDate)
     }
 
     // Get altitude
-    var altitude = stateVector.baro_altitude;
-    if (altitude === null)
-      altitude = stateVector.geo_altitude;
-    if (altitude === null)
-      altitude = -1;
+    const barometricAltitude = stateVector.baro_altitude ? stateVector.baro_altitude : 0;
+    const geometricAltitude = stateVector.geo_altitude ? stateVector.geo_altitude : 0;
+    var altitude = stateVector.geo_altitude;
+    if ((altitude === null) || (altitude < 0))
+      altitude = stateVector.baro_altitude;
+    if ((altitude === null) || (altitude < 0))
+      altitude = 0;
 
     // Get velocity
     const velocity = stateVector.velocity ? stateVector.velocity : -1;
@@ -268,19 +280,43 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
 
         <div className={classes.textContainer}>
           <div className={classes.textDescription}>
-            {'Last Update'}
+            {'Last contact'}
           </div>
           <div className={classes.textValue}>
-            {`${lastUpdate} [${updateTime.toString()}s]`}
+            {`${lastContactTime} [${lastPositionPastSeconds.toString()}s]`}
           </div>
         </div>
 
+        <div className={classes.textSpace} />
+
         <div className={classes.textContainer}>
           <div className={classes.textDescription}>
-            {'Altitude'}
+            {'Last position update'}
           </div>
           <div className={classes.textValue}>
-            {`${getFormattedValue(altitude, 1)} m [${getFormattedValue(altitude * 3.28084, 1)} ft.]`}
+            {`${lastPositionTime} [${lastPositionPastSeconds.toString()}s]`}
+          </div>
+        </div>
+
+        <div className={classes.textSpace} />
+
+        <div className={classes.textContainer}>
+          <div className={classes.textDescription}>
+            {'Barometric altitude'}
+          </div>
+          <div className={classes.textValue}>
+            {`${getFormattedValue(barometricAltitude, 1)} m [${getFormattedValue(barometricAltitude * 3.28084, 1)} ft.]`}
+          </div>
+        </div>
+
+        <div className={classes.textSpace} />
+
+        <div className={classes.textContainer}>
+          <div className={classes.textDescription}>
+            {'Geometric altitude'}
+          </div>
+          <div className={classes.textValue}>
+            {`${getFormattedValue(geometricAltitude, 1)} m [${getFormattedValue(geometricAltitude * 3.28084, 1)} ft.]`}
           </div>
         </div>
 
@@ -302,7 +338,7 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
             {'Longitude / Latitude'}
           </div>
           <div className={classes.textValue}>
-            {`${getFormattedValue(stateVector.longitude ? stateVector.longitude : -1, 3)} ° / ${getFormattedValue(stateVector.latitude ? stateVector.latitude : -1, 3)}`}
+            {`${getFormattedValue(stateVector.longitude ? stateVector.longitude : -1, 3)} ° / ${getFormattedValue(stateVector.latitude ? stateVector.latitude : -1, 3)} °`}
           </div>
         </div>
 
@@ -364,6 +400,14 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
       </React.Fragment>
     );
   };
+
+  if (!props.selectedAircraft)
+    return (
+      <div className={classes.overlayIndicatorRoot}>
+        <Indicator1
+          color={theme.palette.primary.main} />
+      </div>
+    );
 
   return (
 
