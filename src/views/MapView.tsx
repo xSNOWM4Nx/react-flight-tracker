@@ -1,30 +1,16 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { ViewportProps } from 'react-map-gl';
-import { ServiceContext } from '@daniel.neuweiler/react-lib-module';
+import { ServiceContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
 
 import { IOpenSkyAPIService } from './../services';
 import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
 import FlightMap from './../components/FlightMap';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    cardRoot: {
-      backgroundColor: theme.palette.primary.main,
-      height: '100%',
-      borderRadius: 0
-    }
-  }),
-);
-
 interface ILocalProps {
 }
 type Props = ILocalProps;
 
-const MapPage: React.FC<Props> = (props) => {
-
-  // External hooks
-  const classes = useStyles();
+const MapView: React.FC<Props> = (props) => {
 
   // States
   const [stateVectors, setStateVectors] = useState<IStateVectorData>({ time: Date.now(), states: [] });
@@ -88,13 +74,18 @@ const MapPage: React.FC<Props> = (props) => {
   };
 
   return (
-    <FlightMap
-      stateVectors={stateVectors}
-      selectedAircraft={trackedAircraft}
-      onMapChange={handleMapChange}
-      onTrackAircraft={handleTrackAircraft}
-      onReleaseTrack={handleReleaseTrack} />
-  )
-};
 
-export default MapPage;
+    <ViewContainer
+      isScrollLocked={true}>
+
+      <FlightMap
+        stateVectors={stateVectors}
+        selectedAircraft={trackedAircraft}
+        onMapChange={handleMapChange}
+        onTrackAircraft={handleTrackAircraft}
+        onReleaseTrack={handleReleaseTrack} />
+    </ViewContainer>
+  );
+}
+
+export default MapView;

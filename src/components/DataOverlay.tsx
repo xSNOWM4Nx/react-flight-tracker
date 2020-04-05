@@ -9,6 +9,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 128,
       height: 70,
       backgroundColor: theme.palette.grey[500],
+      color: theme.palette.grey[900],
       borderRadius: 4,
       opacity: 0.9,
       padding: theme.spacing(1)

@@ -31,6 +31,7 @@ const useStyles = makeStyles((theme: Theme) =>
       height: 'auto',
       width: 'auto',
       backgroundColor: theme.palette.grey[500],
+      color: theme.palette.grey[900],
       borderRadius: 4,
       opacity: 0.9,
       padding: theme.spacing(1)

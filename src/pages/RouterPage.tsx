@@ -1,11 +1,9 @@
 import React from 'react';
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom';
-import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
 import StartPage from './StartPage';
-import MapPage from './MapPage';
 import ErrorPage from './ErrorPage';
-import classes from '*.module.css';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -32,7 +30,7 @@ const RouterPage: React.FC<Props> = (props) => {
     <div className={classes.pageRoot}>
 
       {/* Redirect to map on a unknown path */}
-      {location.pathname === '/' ? <Redirect from="/" to="map" /> : null}
+      {location.pathname === '/' ? <Redirect from="/" to="start" /> : null}
 
       <Switch>
 
@@ -40,13 +38,6 @@ const RouterPage: React.FC<Props> = (props) => {
           path="/start"
           render={(routeProps) =>
             <StartPage
-              {...routeProps} />
-          }
-        />
-        <Route
-          path="/map"
-          render={(routeProps) =>
-            <MapPage
               {...routeProps} />
           }
         />
