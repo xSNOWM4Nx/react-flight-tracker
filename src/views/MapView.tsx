@@ -12,6 +12,9 @@ type Props = ILocalProps;
 
 const MapView: React.FC<Props> = (props) => {
 
+  // Fields
+  const contextName: string = 'MapView'
+
   // States
   const [stateVectors, setStateVectors] = useState<IStateVectorData>({ time: Date.now(), states: [] });
   const [trackedAircraft, setTrackedAircraft] = useState<IAircraftTrack | undefined>(undefined);
@@ -26,8 +29,8 @@ const MapView: React.FC<Props> = (props) => {
     // Mount
     if (openSkyAPIService) {
 
-      openSkyAPIService.onStateVectorsUpdated('MapPage', handleStateVectorsUpdated);
-      openSkyAPIService.onAircraftTrackUpdated('MapPage', handleAircraftTrackUpdated);
+      openSkyAPIService.onStateVectorsUpdated(contextName, handleStateVectorsUpdated);
+      openSkyAPIService.onAircraftTrackUpdated(contextName, handleAircraftTrackUpdated);
     }
 
     // Unmount
@@ -35,8 +38,8 @@ const MapView: React.FC<Props> = (props) => {
 
       if (openSkyAPIService) {
 
-        openSkyAPIService.offStateVectorsUpdated('MapPage', handleStateVectorsUpdated);
-        openSkyAPIService.offAircraftTrackUpdated('MapPage', handleAircraftTrackUpdated);
+        openSkyAPIService.offStateVectorsUpdated(contextName);
+        openSkyAPIService.offAircraftTrackUpdated(contextName);
       }
     }
   }, []);

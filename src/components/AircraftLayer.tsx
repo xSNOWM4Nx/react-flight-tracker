@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Source, Layer } from 'react-map-gl';
 import { FeatureCollection, Geometry, Feature, GeoJsonProperties, Point, Position } from 'geojson';
 import { SymbolLayout, SymbolPaint, Expression, StyleFunction } from 'mapbox-gl';
@@ -18,6 +18,9 @@ type Props = ILocalProps;
 
 const AircraftLayer: React.FC<Props> = (props) => {
 
+  // Fields
+  const contextName: string = 'AircraftLayer'
+
   // External hooks
   const theme = useTheme();
 
@@ -29,13 +32,18 @@ const AircraftLayer: React.FC<Props> = (props) => {
   const serviceContext = useContext(ServiceContext)
   const geospatialService = serviceContext.getService<IGeospatialService>('GeospatialService');
 
+  // Refs
+  const pathPredictionSubscriptionRef = useRef<string>('');
+
   // Effects
   useEffect(() => {
 
     // Mount
     if (geospatialService) {
 
-      geospatialService.onPathPredictionUpdated('AircraftLayer', handlePathPredictionUpdated);
+      // Get a register key for the subscription and save it as reference
+      const registerKey = geospatialService.onPathPredictionUpdated(contextName, handlePathPredictionUpdated);
+      pathPredictionSubscriptionRef.current = registerKey;
     }
 
     // Unmount
@@ -44,7 +52,10 @@ const AircraftLayer: React.FC<Props> = (props) => {
       if (geospatialService) {
 
         geospatialService.stopPathPrediction();
-        geospatialService.offPathPredictionUpdated('AircraftLayer', handlePathPredictionUpdated);
+
+        // Get the register key from the reference to unsubscribe
+        const registerKey = pathPredictionSubscriptionRef.current;
+        geospatialService.offPathPredictionUpdated(registerKey);
       }
     }
   }, []);
@@ -248,7 +259,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
       type="geojson"
       data={featureCollection}>
 
-      < Layer
+      <Layer
         id='aircrafts'
         type='symbol'
         source='geojson'

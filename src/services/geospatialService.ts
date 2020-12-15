@@ -1,4 +1,4 @@
-import { IService, Service } from '@daniel.neuweiler/ts-lib-module';
+import { IService, Service, IResponse, createResponse, ResponseStateEnumeration } from '@daniel.neuweiler/ts-lib-module';
 import { Feature, GeoJsonProperties, Point } from 'geojson';
 import destination from '@turf/destination';
 
@@ -7,11 +7,14 @@ import { IStateVectorData, IAircraftTrack, IStateVector } from '../opensky';
 // Earth radius in meters
 const earthRadius = 6371008.8;
 
+export type PathPredictionUpdatedCallbackMethod = (destinations: Array<Feature<Point, GeoJsonProperties>>) => void;
+interface IPathPredictionUpdatedSubscriberDictionary { [key: string]: PathPredictionUpdatedCallbackMethod };
+
 export interface IGeospatialService extends IService {
   restartPathPrediction: (stateVectors: IStateVectorData) => void;
   stopPathPrediction: () => void;
-  onPathPredictionUpdated: (caller: string, callbackHandler: (destinations: Array<Feature<Point, GeoJsonProperties>>) => void) => void;
-  offPathPredictionUpdated: (caller: string, callbackHandler: (destinations: Array<Feature<Point, GeoJsonProperties>>) => void) => void;
+  onPathPredictionUpdated: (contextKey: string, callbackHandler: PathPredictionUpdatedCallbackMethod) => string;
+  offPathPredictionUpdated: (registerKey: string) => boolean;
 };
 
 export class GeospatialService extends Service implements IGeospatialService {
@@ -20,19 +23,12 @@ export class GeospatialService extends Service implements IGeospatialService {
   private pathPredictionInterval: number = 100;
   private pathPredictionCounter: number = 0;
   private pathPredictionIntervalID: number = 0;
-  private onPathPredictionUpdateSubscribers: Array<(destinations: Array<Feature<Point, GeoJsonProperties>>) => void> = [];
+  private pathPredictionUpdatedSubscriberDictionary: IPathPredictionUpdatedSubscriberDictionary = {};
+  private pathPredictionUpdatedSubscriptionCounter: number = 0;
 
   constructor() {
     super('GeospatialService');
 
-  };
-
-  public async stop() {
-
-    clearInterval(this.pathPredictionIntervalID);
-
-    var superResponse = await super.stop();
-    return superResponse;
   };
 
   public restartPathPrediction = (stateVectors: IStateVectorData) => {
@@ -47,24 +43,50 @@ export class GeospatialService extends Service implements IGeospatialService {
     clearInterval(this.pathPredictionIntervalID);
   };
 
-  public onPathPredictionUpdated = (caller: string, callbackHandler: (destinations: Array<Feature<Point, GeoJsonProperties>>) => void) => {
+  public onPathPredictionUpdated = (contextKey: string, callbackHandler: PathPredictionUpdatedCallbackMethod) => {
 
-    var index = this.onPathPredictionUpdateSubscribers.indexOf(callbackHandler);
-    if (index < 0)
-      this.onPathPredictionUpdateSubscribers.push(callbackHandler);
+    // Setup register key
+    this.pathPredictionUpdatedSubscriptionCounter++;
+    const registerKey = `${contextKey}_${this.pathPredictionUpdatedSubscriptionCounter}`
 
-    this.logger.debug(`'${caller}' has subscribed for 'PathPredictionUpdated'.`);
-    this.logger.debug(`'${this.onPathPredictionUpdateSubscribers.length}' subscribers for 'PathPredictionUpdated'.`);
+    // Register callback
+    this.pathPredictionUpdatedSubscriberDictionary[registerKey] = callbackHandler;
+    this.logger.debug(`Component with key '${registerKey}' has subscribed on 'PathPredictionUpdated'.`);
+    this.logger.debug(`'${Object.entries(this.pathPredictionUpdatedSubscriberDictionary).length}' subscribers on 'PathPredictionUpdated'.`);
+
+    return registerKey;
   };
 
-  public offPathPredictionUpdated = (caller: string, callbackHandler: (destinations: Array<Feature<Point, GeoJsonProperties>>) => void) => {
+  public offPathPredictionUpdated = (registerKey: string) => {
 
-    var index = this.onPathPredictionUpdateSubscribers.indexOf(callbackHandler);
-    if (index >= 0)
-      this.onPathPredictionUpdateSubscribers.splice(index, 1);
+    // Delete callback
+    var existingSubscriber = Object.entries(this.pathPredictionUpdatedSubscriberDictionary).find(([key, value]) => key === registerKey);
+    if (existingSubscriber) {
 
-    this.logger.debug(`'${caller}' has unsubscribed for 'PathPredictionUpdated'.`);
-    this.logger.debug(`'${this.onPathPredictionUpdateSubscribers.length}' subscribers for 'PathPredictionUpdated'.`);
+      delete this.pathPredictionUpdatedSubscriberDictionary[registerKey];
+      this.logger.debug(`Component with key '${registerKey}' has unsubscribed on 'PathPredictionUpdated'.`);
+      this.logger.debug(`'${Object.entries(this.pathPredictionUpdatedSubscriberDictionary).length}' subscribers on 'PathPredictionUpdated'.`);
+
+      return true;
+    }
+    else {
+
+      this.logger.error(`Component with key '${registerKey}' not registered on 'PathPredictionUpdated'.`);
+      this.logger.debug(`'${Object.entries(this.pathPredictionUpdatedSubscriberDictionary).length}' subscribers on 'PathPredictionUpdated'.`);
+
+      return false;
+    };
+  };
+
+  protected async onStarting(): Promise<IResponse<boolean>> {
+    return createResponse<boolean>(true, ResponseStateEnumeration.OK, []);
+  };
+
+  protected async onStopping(): Promise<IResponse<boolean>> {
+
+    clearInterval(this.pathPredictionIntervalID);
+
+    return createResponse<boolean>(true, ResponseStateEnumeration.OK, []);
   };
 
   private calculatePath = (stateVectors: IStateVectorData) => {
@@ -127,6 +149,6 @@ export class GeospatialService extends Service implements IGeospatialService {
     this.pathPredictionCounter += this.pathPredictionInterval;
 
     // Execute callbacks
-    this.onPathPredictionUpdateSubscribers.forEach(callback => callback(features))
+    Object.entries(this.pathPredictionUpdatedSubscriberDictionary).forEach(([key, value], index) => value(features))
   };
 }

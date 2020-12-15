@@ -1,4 +1,4 @@
-import { IService, Service, ServiceStateEnumeration, ServiceKeys, IRESTService, ResponseStateEnumeration } from '@daniel.neuweiler/ts-lib-module';
+import { IService, Service, ServiceStateEnumeration, ServiceKeys, IRESTService, IResponse, createResponse, ResponseStateEnumeration } from '@daniel.neuweiler/ts-lib-module';
 import {
   IStateVectorData, IStateVectorRawData, IStateVector,
   IAircraftFlight, IAircraftTrack,
@@ -10,14 +10,20 @@ const defaultStateInterval: number = 12000;
 const registeredSatetInterval: number = 6000;
 const metadataInterval: number = 5000;
 
+export type StateVectorsUpdatedCallbackMethod = (stateVectors: IStateVectorData) => void;
+interface IStateVectorsUpdatedSubscriberDictionary { [key: string]: StateVectorsUpdatedCallbackMethod };
+
+export type AircraftTrackUpdatedCallbackMethod = (track: IAircraftTrack) => void;
+interface IAircraftTrackUpdatedSubscriberDictionary { [key: string]: AircraftTrackUpdatedCallbackMethod };
+
 export interface IOpenSkyAPIService extends IService {
   geoBounds: IMapGeoBounds;
-  onStateVectorsUpdated: (caller: string, callbackHandler: (stateVectors: IStateVectorData) => void) => void;
-  offStateVectorsUpdated: (caller: string, callbackHandler: (stateVectors: IStateVectorData) => void) => void;
+  onStateVectorsUpdated: (registerKey: string, callbackHandler: StateVectorsUpdatedCallbackMethod) => void;
+  offStateVectorsUpdated: (registerKey: string) => void;
   trackAircraft: (icao24: string) => void;
   releaseTrack: (icao24: string) => void;
-  onAircraftTrackUpdated: (caller: string, callbackHandler: (track: IAircraftTrack) => void) => void;
-  offAircraftTrackUpdated: (caller: string, callbackHandler: (track: IAircraftTrack) => void) => void;
+  onAircraftTrackUpdated: (registerKey: string, callbackHandler: AircraftTrackUpdatedCallbackMethod) => void;
+  offAircraftTrackUpdated: (registerKey: string) => void;
 };
 
 export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
@@ -34,7 +40,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
 
   private fetchStateVectorsIntervalID: number = 0;
   private isFetchingStateVectors: boolean = false;
-  private onStateVectorUpdateSubscribers: Array<(stateVectors: IStateVectorData) => void> = [];
+  private stateVectorsUpdatedSubscriberDictionary: IStateVectorsUpdatedSubscriberDictionary = {};
 
   private fetchAircraftStateIntervalID: number = 0;
   private isFetchingAircraftStateVector: boolean = false;
@@ -45,7 +51,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
   private fetchAircraftDataIntervalID: number = 0;
   private isFetchingAircraftData: boolean = false;
 
-  private onAircraftTrackUpdateSubscribers: Array<(track: IAircraftTrack) => void> = [];
+  private aircraftTrackUpdatedSubscriberDictionary: IAircraftTrackUpdatedSubscriberDictionary = {};
   private trackedAircraft: IAircraftTrack;
 
   constructor(userName?: string, password?: string) {
@@ -67,72 +73,25 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     };
   };
 
-  public async start() {
+  public onStateVectorsUpdated = (registerKey: string, callbackHandler: StateVectorsUpdatedCallbackMethod) => {
 
-    // Check if the service provider was injected
-    if (!this.serviceProvider) {
+    // Check if the callback handler is already registred, otherwise it will be added
+    var existingSubscriber = Object.entries(this.stateVectorsUpdatedSubscriberDictionary).find(([key, value], index) => key === registerKey)
+    if (!existingSubscriber)
+      this.stateVectorsUpdatedSubscriberDictionary[registerKey] = callbackHandler;
 
-      this.updateState(ServiceStateEnumeration.Error);
-      return this.resolveNotStartingResponse('No service provider is injected. As a result, some services are not available.');
-    }
-
-    // Get the REST service
-    this.restService = this.serviceProvider.getService<IRESTService>(ServiceKeys.RESTService);
-    if (!this.restService) {
-
-      this.updateState(ServiceStateEnumeration.Error);
-      return this.resolveNotStartingResponse('No REST service available.');
-    }
-
-    // Check for authorization
-    if (this.userName && this.password) {
-
-      this.hasCredentials = true;
-      this.restService.setAuthorization(`Basic ${btoa(`${this.userName}:${this.password}`)}`);
-
-      this.userName = undefined;
-      this.password = undefined;
-    }
-
-    var superResponse = await super.start();
-    if (superResponse.state !== ResponseStateEnumeration.OK)
-      return superResponse;
-
-    const fetchStateVectorInterval: number = this.hasCredentials ? registeredSatetInterval : defaultStateInterval;
-    this.fetchStateVectorsIntervalID = window.setInterval(this.fetchStateVectors, fetchStateVectorInterval);
-
-    return superResponse;
+    this.logger.debug(`New subscription for 'StateVectorsUpdated' with key '${registerKey}'.`);
+    this.logger.debug(`'${Object.entries(this.stateVectorsUpdatedSubscriberDictionary).length}' subscribers for 'StateVectorsUpdated' registered.`);
   };
 
-  public async stop() {
+  public offStateVectorsUpdated = (registerKey: string) => {
 
-    clearInterval(this.fetchStateVectorsIntervalID);
-    clearInterval(this.fetchAircraftStateIntervalID);
-    clearInterval(this.fetchAircraftRouteIntervalID);
-    clearInterval(this.fetchAircraftDataIntervalID);
+    var existingSubscriber = Object.entries(this.stateVectorsUpdatedSubscriberDictionary).find(([key, value], index) => key === registerKey)
+    if (existingSubscriber)
+      delete this.stateVectorsUpdatedSubscriberDictionary[registerKey];
 
-    var superResponse = await super.stop();
-    return superResponse;
-  };
-
-  public onStateVectorsUpdated = (caller: string, callbackHandler: (stateVectors: IStateVectorData) => void) => {
-
-    var index = this.onStateVectorUpdateSubscribers.indexOf(callbackHandler);
-    if (index < 0)
-      this.onStateVectorUpdateSubscribers.push(callbackHandler);
-
-    this.logger.debug(`'${caller}' has subscribed for 'StateVectorsUpdated'.`);
-    this.logger.debug(`'${this.onStateVectorUpdateSubscribers.length}' subscribers for 'StateVectorsUpdated'.`);
-  };
-
-  public offStateVectorsUpdated = (caller: string, callbackHandler: (stateVectors: IStateVectorData) => void) => {
-
-    var index = this.onStateVectorUpdateSubscribers.indexOf(callbackHandler);
-    if (index >= 0)
-      this.onStateVectorUpdateSubscribers.splice(index, 1);
-
-    this.logger.debug(`'${caller}' has unsubscribed for 'StateVectorsUpdated'.`);
-    this.logger.debug(`'${this.onStateVectorUpdateSubscribers.length}' subscribers for 'StateVectorsUpdated'.`);
+    this.logger.debug(`Subscription for 'StateVectorsUpdated' has removed with key '${registerKey}'.`);
+    this.logger.debug(`'${Object.entries(this.stateVectorsUpdatedSubscriberDictionary).length}' subscribers for 'StateVectorsUpdated' registered.`);
   };
 
   public trackAircraft = (icao24: string) => {
@@ -169,24 +128,92 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     this.logger.info(`Stop tracking for aircraft '${icao24}'.`);
   };
 
-  public onAircraftTrackUpdated = (caller: string, callbackHandler: (track: IAircraftTrack) => void) => {
+  public onAircraftTrackUpdated = (registerKey: string, callbackHandler: AircraftTrackUpdatedCallbackMethod) => {
 
-    var index = this.onAircraftTrackUpdateSubscribers.indexOf(callbackHandler);
-    if (index < 0)
-      this.onAircraftTrackUpdateSubscribers.push(callbackHandler);
+    // Check if the callback handler is already registred, otherwise it will be added
+    var existingSubscriber = Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).find(([key, value], index) => key === registerKey)
+    if (!existingSubscriber)
+      this.aircraftTrackUpdatedSubscriberDictionary[registerKey] = callbackHandler;
 
-    this.logger.debug(`'${caller}' has subscribed for 'AircraftTrackUpdated'.`);
-    this.logger.debug(`'${this.onStateVectorUpdateSubscribers.length}' subscribers for 'AircraftTrackUpdated'.`);
+    this.logger.debug(`New subscription for 'AircraftTrackUpdated' with key '${registerKey}'.`);
+    this.logger.debug(`'${Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).length}' subscribers for 'AircraftTrackUpdated' registered.`);
   };
 
-  public offAircraftTrackUpdated = (caller: string, callbackHandler: (track: IAircraftTrack) => void) => {
+  public offAircraftTrackUpdated = (registerKey: string) => {
 
-    var index = this.onAircraftTrackUpdateSubscribers.indexOf(callbackHandler);
-    if (index >= 0)
-      this.onAircraftTrackUpdateSubscribers.splice(index, 1);
+    var existingSubscriber = Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).find(([key, value], index) => key === registerKey)
+    if (existingSubscriber)
+      delete this.aircraftTrackUpdatedSubscriberDictionary[registerKey];
 
-    this.logger.debug(`'${caller}' has unsubscribed for 'AircraftTrackUpdated'.`);
-    this.logger.debug(`'${this.onStateVectorUpdateSubscribers.length}' subscribers for 'AircraftTrackUpdated'.`);
+    this.logger.debug(`Subscription for 'AircraftTrackUpdated' has removed with key '${registerKey}'.`);
+    this.logger.debug(`'${Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).length}' subscribers for 'AircraftTrackUpdated' registered.`);
+  };
+
+  protected async onStarting(): Promise<IResponse<boolean>> {
+
+    // Setup response
+    const response = createResponse<boolean>(true, ResponseStateEnumeration.OK, []);
+
+    // Check if the service provider was injected
+    if (!this.serviceProvider) {
+
+      this.updateState(ServiceStateEnumeration.Error);
+
+      response.payload = false;
+      response.messageStack = [
+        {
+          display: {
+            key: "",
+            value: `No service provider is injected. Service ${this.key} cannnot be started.`
+          },
+          context: ''
+        }
+      ]
+      return response;
+    };
+
+    // Get the REST service
+    this.restService = this.serviceProvider.getService<IRESTService>(ServiceKeys.RESTService);
+    if (!this.restService) {
+
+      this.updateState(ServiceStateEnumeration.Error);
+      response.payload = false;
+      response.messageStack = [
+        {
+          display: {
+            key: "",
+            value: `No REST service is available. Service ${this.key} cannnot be started.`
+          },
+          context: ''
+        }
+      ]
+      return response;
+    };
+
+    // Check for authorization
+    if (this.userName && this.password) {
+
+      this.hasCredentials = true;
+      this.restService.setAuthorization(`Basic ${btoa(`${this.userName}:${this.password}`)}`);
+
+      this.userName = undefined;
+      this.password = undefined;
+    };
+
+    const fetchStateVectorInterval: number = this.hasCredentials ? registeredSatetInterval : defaultStateInterval;
+    this.fetchStateVectorsIntervalID = window.setInterval(this.fetchStateVectors, fetchStateVectorInterval);
+
+    return response;
+  };
+
+  protected async onStopping(): Promise<IResponse<boolean>> {
+
+    clearInterval(this.fetchStateVectorsIntervalID);
+    clearInterval(this.fetchAircraftStateIntervalID);
+    clearInterval(this.fetchAircraftRouteIntervalID);
+    clearInterval(this.fetchAircraftDataIntervalID);
+
+    return createResponse<boolean>(true, ResponseStateEnumeration.OK, []);
   };
 
   private mapRawStateVectorData = (rawData: IStateVectorRawData) => {
@@ -249,7 +276,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
         if (response.payload) {
 
           var mappedData = this.mapRawStateVectorData(response.payload);
-          this.onStateVectorUpdateSubscribers.forEach(callback => callback(mappedData))
+          Object.entries(this.stateVectorsUpdatedSubscriberDictionary).forEach(([key, value], index) => value(mappedData))
         }
 
         this.isFetchingStateVectors = false;
@@ -290,7 +317,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
             this.trackedAircraft.stateVector = mappedData.states[0]
             this.trackedAircraft.callsign = this.trackedAircraft.stateVector.callsign ? this.trackedAircraft.stateVector.callsign : '';
 
-            this.onAircraftTrackUpdateSubscribers.forEach(callback => callback(this.trackedAircraft))
+            Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).forEach(([key, value], index) => value(this.trackedAircraft))
           }
         }
 

@@ -1,4 +1,5 @@
 # react-flight-tracker
+## 🚧 This Repo is under Construction 🚧
 An open-source project written with React and TypeScript.
 
 The goal of this project is to read the data from [OpenSky Network](https://opensky-network.org/) and visualize it on a map.
@@ -16,7 +17,7 @@ The goal of this project is to read the data from [OpenSky Network](https://open
 - [react-map-gl](https://github.com/uber/react-map-gl)
 
 ## 🔮 Features:
-- Using "Hooks", "Context" and other popular React patterns.
+- Using "Hooks", "Context", "Suspense", "React.lazy" and other popular React patterns.
 - Written entirely in TypeScript.
 - Using maps from [mapbox](https://www.mapbox.com/) with the React friendly wrapper [react-map-gl](https://github.com/uber/react-map-gl) from Uber.
 - Using styling components from the popular [material-ui](https://github.com/mui-org/material-ui) project.

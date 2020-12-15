@@ -2,7 +2,7 @@ import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { ViewInjector } from '@daniel.neuweiler/react-lib-module';
 
-import { NavigantionElements } from './../views';
+import { NavigantionElements, ViewKeys } from './../views';
 
 interface ILocalProps {
 }
@@ -10,13 +10,13 @@ type Props = ILocalProps & RouteComponentProps<{}>;
 
 const StartPage: React.FC<Props> = (props) => {
 
-  const mapViewElement = NavigantionElements.find(e => e.key === "MapView");
-  if (!mapViewElement)
+  const viewElement = NavigantionElements.find(e => e.key === ViewKeys.MapView);
+  if (!viewElement)
     return null;
 
   return (
     <ViewInjector
-      navigationElement={mapViewElement}
+      navigationElement={viewElement}
       onImportView={navigationElement => React.lazy(() => import(`./../${navigationElement.importPath}`))} />
   );
 }

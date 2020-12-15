@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useRef, useEffect } from 'react';
 import { ServiceKeys, INavigationService, INavigationRequest, NavigationTypeEnumeration } from '@daniel.neuweiler/ts-lib-module';
 import { ServiceContext } from '@daniel.neuweiler/react-lib-module';
 import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
@@ -50,18 +50,29 @@ const ProviderPage: React.FC<Props> = (props) => {
   const serviceContext = useContext(ServiceContext);
   const navigationService = serviceContext.getService<INavigationService>(ServiceKeys.NavigationService);
 
+  // Refs
+  const navigationSubscriptionRef = useRef<string>('');
+
   // Effects
   useEffect(() => {
 
     // Mount
-    if (navigationService)
-      navigationService.onNavigationRequest(contextName, handleNavigationRequest);
+    if (navigationService) {
+
+      // Get a register key for the subscription and save it as reference
+      const registerKey = navigationService.onNavigationRequest(contextName, handleNavigationRequest);
+      navigationSubscriptionRef.current = registerKey;
+    }
 
     // Unmount
     return () => {
 
-      if (navigationService)
-        navigationService.offNavigationRequest(contextName, handleNavigationRequest);
+      if (navigationService) {
+
+        // Get the register key from the reference to unsubscribe
+        const registerKey = navigationSubscriptionRef.current;
+        navigationService.offNavigationRequest(registerKey);
+      }
     }
   }, []);
 
