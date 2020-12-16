@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { INavigationRequest } from '@daniel.neuweiler/ts-lib-module';
 
 import StartPage from './StartPage';
 import ErrorPage from './ErrorPage';
@@ -15,6 +16,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface ILocalProps {
+  navigationRequest?: INavigationRequest;
 }
 type Props = ILocalProps;
 
@@ -24,6 +26,20 @@ const RouterPage: React.FC<Props> = (props) => {
   const history = useHistory();
   const location = useLocation();
   const classes = useStyles();
+
+  // Refs
+  const errorSourceNameRef = useRef('');
+  const errorMessageRef = useRef('');
+
+  const handleNavigationError = (sourceName: string, errorMessage: string) => {
+
+    // Setup error references
+    errorSourceNameRef.current = sourceName;
+    errorMessageRef.current = errorMessage;
+
+    // Go to error page
+    history.push('/error');
+  };
 
   return (
 
@@ -38,13 +54,16 @@ const RouterPage: React.FC<Props> = (props) => {
           path="/start"
           render={(routeProps) =>
             <StartPage
-              {...routeProps} />
+              {...routeProps}
+              onNavigationError={handleNavigationError} />
           }
         />
-        <Route render={(routeProps) =>
-          <ErrorPage
-            {...routeProps} />
-        } />
+        <Route
+          path="/error"
+          render={(routeProps) =>
+            <ErrorPage
+              {...routeProps} />
+          } />
 
       </Switch>
     </div>

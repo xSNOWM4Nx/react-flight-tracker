@@ -1,7 +1,8 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { ViewportProps } from 'react-map-gl';
 import { ServiceContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
 
+import { ViewKeys } from './navigation';
 import { IOpenSkyAPIService } from './../services';
 import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
 import FlightMap from './../components/FlightMap';
@@ -13,7 +14,7 @@ type Props = ILocalProps;
 const MapView: React.FC<Props> = (props) => {
 
   // Fields
-  const contextName: string = 'MapView'
+  const contextName: string = ViewKeys.MapView;
 
   // States
   const [stateVectors, setStateVectors] = useState<IStateVectorData>({ time: Date.now(), states: [] });
@@ -23,14 +24,22 @@ const MapView: React.FC<Props> = (props) => {
   const serviceContext = useContext(ServiceContext)
   const openSkyAPIService = serviceContext.getService<IOpenSkyAPIService>('OpenSkyAPIService');
 
+  // Refs
+  const stateVectorsSubscriptionRef = useRef<string>('');
+  const aircraftTrackSubscriptionRef = useRef<string>('');
+
   // Effects
   useEffect(() => {
 
     // Mount
     if (openSkyAPIService) {
 
-      openSkyAPIService.onStateVectorsUpdated(contextName, handleStateVectorsUpdated);
-      openSkyAPIService.onAircraftTrackUpdated(contextName, handleAircraftTrackUpdated);
+      // Get a register key for the subscription and save it as reference
+      var registerKey = openSkyAPIService.onStateVectorsUpdated(contextName, handleStateVectorsUpdated);
+      stateVectorsSubscriptionRef.current = registerKey;
+
+      registerKey = openSkyAPIService.onAircraftTrackUpdated(contextName, handleAircraftTrackUpdated);
+      aircraftTrackSubscriptionRef.current = registerKey;
     }
 
     // Unmount
@@ -38,8 +47,12 @@ const MapView: React.FC<Props> = (props) => {
 
       if (openSkyAPIService) {
 
-        openSkyAPIService.offStateVectorsUpdated(contextName);
-        openSkyAPIService.offAircraftTrackUpdated(contextName);
+        // Get the register key from the reference to unsubscribe
+        var registerKey = stateVectorsSubscriptionRef.current;
+        openSkyAPIService.offStateVectorsUpdated(registerKey);
+
+        registerKey = aircraftTrackSubscriptionRef.current;
+        openSkyAPIService.offAircraftTrackUpdated(registerKey);
       }
     }
   }, []);

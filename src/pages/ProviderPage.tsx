@@ -1,11 +1,13 @@
-import React, { useContext, useRef, useEffect } from 'react';
-import { ServiceKeys, INavigationService, INavigationRequest, NavigationTypeEnumeration } from '@daniel.neuweiler/ts-lib-module';
-import { ServiceContext } from '@daniel.neuweiler/react-lib-module';
+import React, { useContext, useState, useRef, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
+import { ServiceKeys, INavigationService, INavigationRequest } from '@daniel.neuweiler/ts-lib-module';
+import { ServiceContext, SelectableMenu, ISelectableProps } from '@daniel.neuweiler/react-lib-module';
 import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
 import Fab from '@material-ui/core/Fab';
 import MenuIcon from '@material-ui/icons/Menu';
 
 import RouterPage from './RouterPage';
+import { ViewNavigationElements, ViewKeys } from './../views/navigation';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -43,12 +45,21 @@ const ProviderPage: React.FC<Props> = (props) => {
   const contextName: string = 'ProviderPage'
 
   // External hooks
+  var history = useHistory();
   const theme = useTheme();
   const classes = useStyles();
 
   // Contexts
   const serviceContext = useContext(ServiceContext);
   const navigationService = serviceContext.getService<INavigationService>(ServiceKeys.NavigationService);
+
+  // States
+  const [navigationRequest, setNavigationRequest] = useState<INavigationRequest | undefined>(undefined);
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [selectableMenuItems, setSelectableMenuItems] = useState<Array<ISelectableProps>>([
+    ViewNavigationElements[2],
+    ViewNavigationElements[3]
+  ]);
 
   // Refs
   const navigationSubscriptionRef = useRef<string>('');
@@ -76,14 +87,21 @@ const ProviderPage: React.FC<Props> = (props) => {
     }
   }, []);
 
-  const handleNavigationRequest = (request: INavigationRequest) => {
+  const handleNavigationRequest = (navigationRequest: INavigationRequest) => {
 
-    if (request.type === NavigationTypeEnumeration.Dialog) {
+    setNavigationRequest(navigationRequest);
 
+    if (navigationRequest.url !== undefined)
+      history.push(navigationRequest.url);
+  };
 
-      return;
-    }
+  const handleMenuButtonClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    setMenuAnchor(menuAnchor ? null : e.currentTarget);
+  };
 
+  const handleMenuSelect = (e: React.MouseEvent<HTMLElement>, element: ISelectableProps, index: number) => {
+
+    setMenuAnchor(null);
   };
 
   return (
@@ -96,13 +114,23 @@ const ProviderPage: React.FC<Props> = (props) => {
 
           <Fab
             color="primary"
-            aria-label="menu">
+            aria-label="menu"
+            onClick={handleMenuButtonClick}>
+
             <MenuIcon />
           </Fab>
 
         </div>
 
-        <RouterPage />
+        <RouterPage
+          navigationRequest={navigationRequest} />
+
+        <SelectableMenu
+          anchor={menuAnchor}
+          items={selectableMenuItems}
+          onLocalize={(localizableContent) => localizableContent.value}
+          onSelect={handleMenuSelect}
+          onClose={() => setMenuAnchor(null)} />
 
       </div>
     </div>

@@ -1,15 +1,15 @@
 import React, { useState, useContext, useEffect, useMemo, Suspense } from 'react';
-import { NavigationElementProps } from '@daniel.neuweiler/react-lib-module';
+import { INavigationElementProps } from '@daniel.neuweiler/react-lib-module';
 import { ViewInjector } from '@daniel.neuweiler/react-lib-module';
 
 import Dialog from '@material-ui/core/Dialog';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 
-import { NavigantionElements, ErrorNavigation } from './../views';
+import { ViewNavigationElements, ViewKeys } from './../views/navigation';
 
 interface ILocalProps {
-  viewKey: string;
+  navigationKey: string;
   isVisible: boolean;
   onClose: () => void;
 }
@@ -18,16 +18,16 @@ type Props = ILocalProps;
 const ViewInjectorDialog: React.FC<Props> = (props) => {
 
   // States
-  const [selectedViewElement, setSelectedViewElement] = useState<NavigationElementProps>(ErrorNavigation);
+  const [selectedNavigationElement, setSelectedNavigationElement] = useState<INavigationElementProps>(ViewNavigationElements[0]);
 
   // Effects
   useEffect(() => {
 
-    const viewElement = NavigantionElements.find(e => e.key === props.viewKey);
-    if (viewElement)
-      setSelectedViewElement(viewElement);
+    const navigationElement = ViewNavigationElements.find(navigationElement => navigationElement.key === props.navigationKey);
+    if (navigationElement)
+      setSelectedNavigationElement(navigationElement);
 
-  }, [props.viewKey]);
+  }, [props.navigationKey]);
 
   const renderHeader = () => {
 
@@ -37,7 +37,7 @@ const ViewInjectorDialog: React.FC<Props> = (props) => {
         <div className={`dialog-title`}>
 
           <div className='typo-h5 text-wrap-word text-left'>
-            {selectedViewElement.display.value}
+            {selectedNavigationElement.display.value}
           </div>
 
           <div className='v2' />
@@ -73,7 +73,7 @@ const ViewInjectorDialog: React.FC<Props> = (props) => {
       <div className='h-100 overflow-h'>
 
         <ViewInjector
-          navigationElement={selectedViewElement}
+          navigationElement={selectedNavigationElement}
           onImportView={navigationElement => React.lazy(() => import(`./../${navigationElement.importPath}`))} />
       </div>
 

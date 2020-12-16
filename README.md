@@ -1,5 +1,4 @@
 # react-flight-tracker
-## 🚧 This Repo is under Construction 🚧
 An open-source project written with React and TypeScript.
 
 The goal of this project is to read the data from [OpenSky Network](https://opensky-network.org/) and visualize it on a map.

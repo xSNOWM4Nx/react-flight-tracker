@@ -2,28 +2,22 @@ import React, { useState, useContext, useEffect } from 'react';
 import { LogProvider } from '@daniel.neuweiler/ts-lib-module';
 import { ViewContainer, LogRenderer } from '@daniel.neuweiler/react-lib-module';
 
-import { ViewKeys } from './navigation';
-
 interface ILocalProps {
 }
 type Props = ILocalProps;
 
-const LogView: React.FC<Props> = (props) => {
+const AboutView: React.FC<Props> = (props) => {
 
   // Fields
-  const contextName: string = ViewKeys.LogView
+  const contextName: string = 'AboutView'
 
   return (
 
     <ViewContainer
       isScrollLocked={true}>
 
-      <LogRenderer
-        logs={LogProvider.archive}
-        locale='de-CH'
-        onLocalize={(l10nContent) => { return l10nContent.value }} />
     </ViewContainer>
   );
 }
 
-export default LogView;
+export default AboutView;

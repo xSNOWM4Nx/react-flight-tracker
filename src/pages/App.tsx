@@ -4,7 +4,7 @@ import { ThemeProvider, createMuiTheme, responsiveFontSizes } from '@material-ui
 import blue from '@material-ui/core/colors/blue';
 import pink from '@material-ui/core/colors/pink';
 import { IService } from '@daniel.neuweiler/ts-lib-module';
-import { ApplicationProvider } from '@daniel.neuweiler/react-lib-module';
+import { ApplicationProvider, ViewContainer, Indicator1 } from '@daniel.neuweiler/react-lib-module';
 
 import ProviderPage from './ProviderPage';
 import { OpenSkyAPIService, GeospatialService } from './../services';
@@ -51,6 +51,14 @@ function App() {
           fallback={
             <div className="page-root">
 
+              <ViewContainer
+                isScrollLocked={true}
+                backgroundColor={"#303030"}>
+
+                <Indicator1
+                  color={theme.palette.primary.main}
+                  scale={4.0} />
+              </ViewContainer>
             </div>
           }>
 

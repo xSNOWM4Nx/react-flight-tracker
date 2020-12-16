@@ -18,12 +18,12 @@ interface IAircraftTrackUpdatedSubscriberDictionary { [key: string]: AircraftTra
 
 export interface IOpenSkyAPIService extends IService {
   geoBounds: IMapGeoBounds;
-  onStateVectorsUpdated: (registerKey: string, callbackHandler: StateVectorsUpdatedCallbackMethod) => void;
-  offStateVectorsUpdated: (registerKey: string) => void;
+  onStateVectorsUpdated: (contextKey: string, callbackHandler: StateVectorsUpdatedCallbackMethod) => string;
+  offStateVectorsUpdated: (registerKey: string) => boolean;
   trackAircraft: (icao24: string) => void;
   releaseTrack: (icao24: string) => void;
-  onAircraftTrackUpdated: (registerKey: string, callbackHandler: AircraftTrackUpdatedCallbackMethod) => void;
-  offAircraftTrackUpdated: (registerKey: string) => void;
+  onAircraftTrackUpdated: (contextKey: string, callbackHandler: AircraftTrackUpdatedCallbackMethod) => string;
+  offAircraftTrackUpdated: (registerKey: string) => boolean;
 };
 
 export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
@@ -41,6 +41,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
   private fetchStateVectorsIntervalID: number = 0;
   private isFetchingStateVectors: boolean = false;
   private stateVectorsUpdatedSubscriberDictionary: IStateVectorsUpdatedSubscriberDictionary = {};
+  private stateVectorsUpdatedSubscriptionCounter: number = 0;
 
   private fetchAircraftStateIntervalID: number = 0;
   private isFetchingAircraftStateVector: boolean = false;
@@ -52,6 +53,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
   private isFetchingAircraftData: boolean = false;
 
   private aircraftTrackUpdatedSubscriberDictionary: IAircraftTrackUpdatedSubscriberDictionary = {};
+  private aircraftTrackUpdatedSubscriptionCounter: number = 0;
   private trackedAircraft: IAircraftTrack;
 
   constructor(userName?: string, password?: string) {
@@ -73,25 +75,39 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     };
   };
 
-  public onStateVectorsUpdated = (registerKey: string, callbackHandler: StateVectorsUpdatedCallbackMethod) => {
+  public onStateVectorsUpdated = (contextKey: string, callbackHandler: StateVectorsUpdatedCallbackMethod) => {
 
-    // Check if the callback handler is already registred, otherwise it will be added
-    var existingSubscriber = Object.entries(this.stateVectorsUpdatedSubscriberDictionary).find(([key, value], index) => key === registerKey)
-    if (!existingSubscriber)
-      this.stateVectorsUpdatedSubscriberDictionary[registerKey] = callbackHandler;
+    // Setup register key
+    this.stateVectorsUpdatedSubscriptionCounter++;
+    const registerKey = `${contextKey}_${this.stateVectorsUpdatedSubscriptionCounter}`
 
-    this.logger.debug(`New subscription for 'StateVectorsUpdated' with key '${registerKey}'.`);
-    this.logger.debug(`'${Object.entries(this.stateVectorsUpdatedSubscriberDictionary).length}' subscribers for 'StateVectorsUpdated' registered.`);
+    // Register callback
+    this.stateVectorsUpdatedSubscriberDictionary[registerKey] = callbackHandler;
+    this.logger.debug(`Component with key '${registerKey}' has subscribed on 'StateVectorsUpdated'.`);
+    this.logger.debug(`'${Object.entries(this.stateVectorsUpdatedSubscriberDictionary).length}' subscribers on 'StateVectorsUpdated'.`);
+
+    return registerKey;
   };
 
   public offStateVectorsUpdated = (registerKey: string) => {
 
-    var existingSubscriber = Object.entries(this.stateVectorsUpdatedSubscriberDictionary).find(([key, value], index) => key === registerKey)
-    if (existingSubscriber)
-      delete this.stateVectorsUpdatedSubscriberDictionary[registerKey];
+    // Delete callback
+    var existingSubscriber = Object.entries(this.stateVectorsUpdatedSubscriberDictionary).find(([key, value]) => key === registerKey);
+    if (existingSubscriber) {
 
-    this.logger.debug(`Subscription for 'StateVectorsUpdated' has removed with key '${registerKey}'.`);
-    this.logger.debug(`'${Object.entries(this.stateVectorsUpdatedSubscriberDictionary).length}' subscribers for 'StateVectorsUpdated' registered.`);
+      delete this.stateVectorsUpdatedSubscriberDictionary[registerKey];
+      this.logger.debug(`Component with key '${registerKey}' has unsubscribed on 'StateVectorsUpdated'.`);
+      this.logger.debug(`'${Object.entries(this.stateVectorsUpdatedSubscriberDictionary).length}' subscribers on 'StateVectorsUpdated'.`);
+
+      return true;
+    }
+    else {
+
+      this.logger.error(`Component with key '${registerKey}' not registered on 'StateVectorsUpdated'.`);
+      this.logger.debug(`'${Object.entries(this.stateVectorsUpdatedSubscriberDictionary).length}' subscribers on 'StateVectorsUpdated'.`);
+
+      return false;
+    };
   };
 
   public trackAircraft = (icao24: string) => {
@@ -128,25 +144,39 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     this.logger.info(`Stop tracking for aircraft '${icao24}'.`);
   };
 
-  public onAircraftTrackUpdated = (registerKey: string, callbackHandler: AircraftTrackUpdatedCallbackMethod) => {
+  public onAircraftTrackUpdated = (contextKey: string, callbackHandler: AircraftTrackUpdatedCallbackMethod) => {
 
-    // Check if the callback handler is already registred, otherwise it will be added
-    var existingSubscriber = Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).find(([key, value], index) => key === registerKey)
-    if (!existingSubscriber)
-      this.aircraftTrackUpdatedSubscriberDictionary[registerKey] = callbackHandler;
+    // Setup register key
+    this.aircraftTrackUpdatedSubscriptionCounter++;
+    const registerKey = `${contextKey}_${this.aircraftTrackUpdatedSubscriptionCounter}`
 
-    this.logger.debug(`New subscription for 'AircraftTrackUpdated' with key '${registerKey}'.`);
-    this.logger.debug(`'${Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).length}' subscribers for 'AircraftTrackUpdated' registered.`);
+    // Register callback
+    this.aircraftTrackUpdatedSubscriberDictionary[registerKey] = callbackHandler;
+    this.logger.debug(`Component with key '${registerKey}' has subscribed on 'AircraftTrackUpdated'.`);
+    this.logger.debug(`'${Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).length}' subscribers on 'AircraftTrackUpdated'.`);
+
+    return registerKey;
   };
 
   public offAircraftTrackUpdated = (registerKey: string) => {
 
-    var existingSubscriber = Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).find(([key, value], index) => key === registerKey)
-    if (existingSubscriber)
-      delete this.aircraftTrackUpdatedSubscriberDictionary[registerKey];
+    // Delete callback
+    var existingSubscriber = Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).find(([key, value]) => key === registerKey);
+    if (existingSubscriber) {
 
-    this.logger.debug(`Subscription for 'AircraftTrackUpdated' has removed with key '${registerKey}'.`);
-    this.logger.debug(`'${Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).length}' subscribers for 'AircraftTrackUpdated' registered.`);
+      delete this.aircraftTrackUpdatedSubscriberDictionary[registerKey];
+      this.logger.debug(`Component with key '${registerKey}' has unsubscribed on 'StateVectorsUpdated'.`);
+      this.logger.debug(`'${Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).length}' subscribers on 'StateVectorsUpdated'.`);
+
+      return true;
+    }
+    else {
+
+      this.logger.error(`Component with key '${registerKey}' not registered on 'StateVectorsUpdated'.`);
+      this.logger.debug(`'${Object.entries(this.aircraftTrackUpdatedSubscriberDictionary).length}' subscribers on 'StateVectorsUpdated'.`);
+
+      return false;
+    };
   };
 
   protected async onStarting(): Promise<IResponse<boolean>> {
