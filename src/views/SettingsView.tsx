@@ -20,8 +20,8 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export class SettingKeys {
-  public static ShowFlightCountOnMap = 'ShowFlightCountOnMap';
-  public static ShowLogsOnMap = 'ShowLogsOnMap';
+  public static ShowDataOverlayOnMap = 'ShowDataOverlayOnMap';
+  public static ShowLogOverlayOnMap = 'ShowLogOverlayOnMap';
 };
 
 interface ILocalProps {
@@ -45,7 +45,7 @@ const SettingsView: React.FC<Props> = (props) => {
     if (typeof (value) === type)
       return value;
 
-    return undefined;
+    return false;
   };
 
   const handleSettingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,7 +56,9 @@ const SettingsView: React.FC<Props> = (props) => {
 
     return (
       <Card
-        className={classes.cardRoot}>
+        classes={{
+          root: classes.cardRoot
+        }}>
 
         <CardContent>
 
@@ -70,20 +72,20 @@ const SettingsView: React.FC<Props> = (props) => {
             <FormControlLabel
               control={
                 <Switch
-                  name={SettingKeys.ShowFlightCountOnMap}
-                  checked={getSetting(SettingKeys.ShowFlightCountOnMap, 'boolean')}
+                  name={SettingKeys.ShowDataOverlayOnMap}
+                  checked={getSetting(SettingKeys.ShowDataOverlayOnMap, 'boolean')}
                   onChange={handleSettingsChange} />
               }
-              label="Show flight count on map"
+              label="Show data overlay on map"
             />
             <FormControlLabel
               control={
                 <Switch
-                  name={SettingKeys.ShowLogsOnMap}
-                  checked={getSetting(SettingKeys.ShowLogsOnMap, 'boolean')}
+                  name={SettingKeys.ShowLogOverlayOnMap}
+                  checked={getSetting(SettingKeys.ShowLogOverlayOnMap, 'boolean')}
                   onChange={handleSettingsChange} />
               }
-              label="Show logs on map"
+              label="Show log overlay on map"
             />
           </FormGroup>
         </CardContent>

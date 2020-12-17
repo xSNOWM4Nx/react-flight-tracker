@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React from 'react';
 import { LogProvider } from '@daniel.neuweiler/ts-lib-module';
 import { ViewContainer, LogRenderer } from '@daniel.neuweiler/react-lib-module';
 
@@ -16,7 +16,7 @@ const LogView: React.FC<Props> = (props) => {
   return (
 
     <ViewContainer
-      isScrollLocked={true}>
+      isScrollLocked={false}>
 
       <LogRenderer
         logs={LogProvider.archive}

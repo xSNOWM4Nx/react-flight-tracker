@@ -7,6 +7,7 @@ import { GlobalContext } from '@daniel.neuweiler/react-lib-module';
 
 import AircraftInfoOverlay from './AircraftInfoOverlay';
 import DataOverlay from './DataOverlay';
+import LogOverlay from './LogOverlay';
 import AircraftLayer from './AircraftLayer';
 import { Constants } from './../mapbox';
 import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
@@ -34,9 +35,13 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dataOverlayContainer: {
       position: 'absolute',
-      bottom: 38,
-      right: 40,
-      padding: '10px'
+      bottom: 48,
+      right: 50,
+    },
+    logOverlayContainer: {
+      position: 'absolute',
+      bottom: 186,
+      right: 50,
     },
     mapControl: {
       backgroundColor: theme.palette.grey[500]
@@ -74,6 +79,14 @@ const FlightMap: React.FC<Props> = (props) => {
   const mapRef = useRef<MapGL>(null);
 
   // Effects
+  useEffect(() => {
+
+    // Mount
+
+    // Unmount
+    return () => {
+    }
+  }, []);
   useEffect(() => {
 
     const mapGeoBounds = getMapGeoBounds();
@@ -172,7 +185,9 @@ const FlightMap: React.FC<Props> = (props) => {
     minPitch: 0,
     maxPitch: 85
   }
-  const showFlightCountOnMap = globalContext.getSetting(SettingKeys.ShowFlightCountOnMap)
+
+  const showDataOverlayOnMap = globalContext.getSetting(SettingKeys.ShowDataOverlayOnMap);
+  const showLogOverlayOnMap = globalContext.getSetting(SettingKeys.ShowLogOverlayOnMap);
 
   return (
 
@@ -198,10 +213,16 @@ const FlightMap: React.FC<Props> = (props) => {
         <NavigationControl className={classes.mapControl} />
       </div>
 
-      {showFlightCountOnMap &&
+      {showDataOverlayOnMap &&
         <div className={classes.dataOverlayContainer}>
           <DataOverlay
             stateVectors={props.stateVectors} />
+        </div>
+      }
+
+      {showLogOverlayOnMap &&
+        <div className={classes.logOverlayContainer}>
+          <LogOverlay />
         </div>
       }
 

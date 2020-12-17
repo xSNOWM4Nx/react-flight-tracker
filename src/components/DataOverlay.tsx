@@ -6,29 +6,27 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     overlayRoot: {
       position: 'relative',
-      width: 128,
-      height: 70,
+      width: 160,
+      height: 116,
       backgroundColor: theme.palette.grey[500],
       color: theme.palette.grey[900],
       borderRadius: 4,
       opacity: 0.9,
       padding: theme.spacing(1)
     },
-    textContainer: {
-      width: '100%',
+    content: {
       height: '100%',
+      width: '100%',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'flex-start',
       alignContent: 'flex-start',
     },
     textDescription: {
-      fontSize: 12,
-      fontWeight: 800
+      ...theme.typography.body1,
     },
     textValue: {
-      fontSize: 16,
-      fontWeight: 'normal'
+      ...theme.typography.h6,
     }
   }),
 );
@@ -46,7 +44,7 @@ const DataOverlay: React.FC<Props> = (props) => {
   return (
     <div className={classes.overlayRoot}>
 
-      <div className={classes.textContainer}>
+      <div className={classes.content}>
         <div className={classes.textDescription}>
           {'Visible flights'}
         </div>

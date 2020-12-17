@@ -31,6 +31,8 @@ const useStyles = makeStyles((theme: Theme) =>
     dialogContentContainer: {
       margin: theme.spacing(1),
       height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
       overflow: 'hidden'
     }
   }),
@@ -95,7 +97,7 @@ const ViewInjectorDialog: React.FC<Props> = (props) => {
         paper: classes.dialogPaper,
       }}
       fullWidth={true}
-      maxWidth='md'
+      maxWidth='sm'
       open={props.isVisible}
       onClose={(e, reason) => props.onClose()}>
 
