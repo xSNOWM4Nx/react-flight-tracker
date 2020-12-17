@@ -3,10 +3,11 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
 import blue from '@material-ui/core/colors/blue';
 import pink from '@material-ui/core/colors/pink';
-import { IService } from '@daniel.neuweiler/ts-lib-module';
-import { ApplicationProvider, ViewContainer, Indicator1 } from '@daniel.neuweiler/react-lib-module';
+import { IService, DefaultStyle } from '@daniel.neuweiler/ts-lib-module';
+import { GlobalContextProvider, ViewContainer, Indicator1 } from '@daniel.neuweiler/react-lib-module';
 
-import ProviderPage from './ProviderPage';
+import ContextPage from './ContextPage';
+import RouterPage from './RouterPage';
 import { OpenSkyAPIService, GeospatialService } from './../services';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -53,7 +54,7 @@ function App() {
 
               <ViewContainer
                 isScrollLocked={true}
-                backgroundColor={"#303030"}>
+                backgroundColor={DefaultStyle.Palette.backgoundDark}>
 
                 <Indicator1
                   color={theme.palette.primary.main}
@@ -62,11 +63,13 @@ function App() {
             </div>
           }>
 
-          <ApplicationProvider
+          <GlobalContextProvider
             onInjectCustomServices={handleInjectCustomServices}>
 
-            <ProviderPage />
-          </ApplicationProvider>
+            <ContextPage>
+              <RouterPage />
+            </ContextPage>
+          </GlobalContextProvider>
         </Suspense>
       </ThemeProvider>
     </BrowserRouter>

@@ -19,7 +19,7 @@ The goal of this project is to read the data from [OpenSky Network](https://open
 - Using "Hooks", "Context", "Suspense", "React.lazy" and other popular React patterns.
 - Written entirely in TypeScript.
 - Using maps from [mapbox](https://www.mapbox.com/) with the React friendly wrapper [react-map-gl](https://github.com/uber/react-map-gl) from Uber.
-- Using styling components from the popular [material-ui](https://github.com/mui-org/material-ui) project.
+- Using styling components from [material-ui](https://github.com/mui-org/material-ui) project.
 - Fetching flight data from [OpenSky Network](https://opensky-network.org/).
 
 ## 🔌 Usage:

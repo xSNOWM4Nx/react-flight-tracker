@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@daniel.neuweiler/ts-lib-module": "0.1.0-alpha.12",
-    "@daniel.neuweiler/react-lib-module": "0.1.0-alpha.6",
+    "@daniel.neuweiler/ts-lib-module": "0.1.0-alpha.13",
+    "@daniel.neuweiler/react-lib-module": "0.1.0-alpha.7",
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
     "react": "^17.0.1",

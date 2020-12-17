@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import { INavigationRequest } from '@daniel.neuweiler/ts-lib-module';
+import { INavigationRequest, NavigationTypeEnumeration } from '@daniel.neuweiler/ts-lib-module';
 import { ViewInjector, INavigationElementProps } from '@daniel.neuweiler/react-lib-module';
 
+import ViewInjectorDialog from './../dialogs/ViewInjectorDialog';
 import { ViewNavigationElements, ViewKeys } from './../views/navigation';
 
 interface ILocalProps {
@@ -14,15 +15,17 @@ type Props = ILocalProps & RouteComponentProps<{}>;
 const StartPage: React.FC<Props> = (props) => {
 
   // States
-  const [selectedNavigationElement, setSelectedNavigationElement] = useState<INavigationElementProps>(ViewNavigationElements[0]);
+  const [selectedViewNavigationElement, setSelectedViewNavigationElement] = useState<INavigationElementProps>(ViewNavigationElements[ViewKeys.ErrorView]);
+  const [selectedViewDialogNavigationElement, setSelectedViewDialogNavigationElement] = useState<INavigationElementProps>(ViewNavigationElements[ViewKeys.ErrorView]);
+  const [isViewDialogVisible, setViewDialogVisible] = useState(false);
 
   // Effects
   useEffect(() => {
 
     // Mount
-    const navigationElement = ViewNavigationElements.find(navigationElement => navigationElement.key === ViewKeys.MapView);
+    const navigationElement = Object.entries(ViewNavigationElements).find(([key, navigationElement]) => navigationElement.key === ViewKeys.MapView);
     if (navigationElement)
-      setSelectedNavigationElement(navigationElement);
+      setSelectedViewNavigationElement(navigationElement[1]);
 
     // Unmount
     return () => {
@@ -33,18 +36,38 @@ const StartPage: React.FC<Props> = (props) => {
     if (!props.navigationRequest)
       return;
 
-    const navigationElement = ViewNavigationElements.find(navigationElement => navigationElement.key === props.navigationRequest?.key);
-    if (navigationElement)
-      setSelectedNavigationElement(navigationElement);
+    const navigationElement = Object.entries(ViewNavigationElements).find(([key, navigationElement]) => navigationElement.key === props.navigationRequest?.key);
+    if (props.navigationRequest.type === NavigationTypeEnumeration.Dialog) {
+
+      if (navigationElement)
+        setSelectedViewDialogNavigationElement(navigationElement[1]);
+
+      setViewDialogVisible(true);
+    }
+    else {
+
+      if (navigationElement)
+        setSelectedViewNavigationElement(navigationElement[1]);
+    }
 
     //props.onNavigationError('StartPage', `Navigation error on StartPage. ${props.navigationRequest?.key} not found.`);
 
   }, [props.navigationRequest]);
 
   return (
-    <ViewInjector
-      navigationElement={selectedNavigationElement}
-      onImportView={navigationElement => React.lazy(() => import(`./../${navigationElement.importPath}`))} />
+
+    <React.Fragment>
+
+      <ViewInjector
+        navigationElement={selectedViewNavigationElement}
+        onImportView={navigationElement => React.lazy(() => import(`./../${navigationElement.importPath}`))} />
+
+      <ViewInjectorDialog
+        isVisible={isViewDialogVisible}
+        navigationElement={selectedViewDialogNavigationElement}
+        onClose={() => setViewDialogVisible(false)} />
+
+    </React.Fragment>
   );
 }
 

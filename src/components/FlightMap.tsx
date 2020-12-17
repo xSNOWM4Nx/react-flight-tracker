@@ -1,13 +1,16 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import MapGL, { FullscreenControl, NavigationControl, MapLoadEvent, PointerEvent, ViewportProps, ExtraState } from 'react-map-gl';
 import { Feature } from 'geojson';
 import { svgToImageAsync } from '@daniel.neuweiler/ts-lib-module';
+import { GlobalContext } from '@daniel.neuweiler/react-lib-module';
+
 import AircraftInfoOverlay from './AircraftInfoOverlay';
 import DataOverlay from './DataOverlay';
 import AircraftLayer from './AircraftLayer';
 import { Constants } from './../mapbox';
 import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
+import { SettingKeys } from './../views/SettingsView';
 
 import FlightIcon from './../resources/flight-24px.svg';
 import FlightLandIcon from './../resources/flight_land-24px.svg';
@@ -60,6 +63,9 @@ const FlightMap: React.FC<Props> = (props) => {
 
   // External hooks
   const classes = useStyles();
+
+  // Contexts
+  const globalContext = useContext(GlobalContext);
 
   // States
   const [viewportProps, setViewportProps] = useState<ViewportProps | undefined>(undefined);
@@ -166,6 +172,7 @@ const FlightMap: React.FC<Props> = (props) => {
     minPitch: 0,
     maxPitch: 85
   }
+  const showFlightCountOnMap = globalContext.getSetting(SettingKeys.ShowFlightCountOnMap)
 
   return (
 
@@ -190,10 +197,13 @@ const FlightMap: React.FC<Props> = (props) => {
       <div className={classes.navigationControlContainer}>
         <NavigationControl className={classes.mapControl} />
       </div>
-      <div className={classes.dataOverlayContainer}>
-        <DataOverlay
-          stateVectors={props.stateVectors} />
-      </div>
+
+      {showFlightCountOnMap &&
+        <div className={classes.dataOverlayContainer}>
+          <DataOverlay
+            stateVectors={props.stateVectors} />
+        </div>
+      }
 
       {props.selectedAircraft &&
         <div className={classes.aircraftOverlayContainer}>

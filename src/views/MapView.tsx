@@ -1,6 +1,6 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { ViewportProps } from 'react-map-gl';
-import { ServiceContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
+import { GlobalContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
 
 import { ViewKeys } from './navigation';
 import { IOpenSkyAPIService } from './../services';
@@ -21,8 +21,8 @@ const MapView: React.FC<Props> = (props) => {
   const [trackedAircraft, setTrackedAircraft] = useState<IAircraftTrack | undefined>(undefined);
 
   // Contexts
-  const serviceContext = useContext(ServiceContext)
-  const openSkyAPIService = serviceContext.getService<IOpenSkyAPIService>('OpenSkyAPIService');
+  const globalContext = useContext(GlobalContext)
+  const openSkyAPIService = globalContext.getService<IOpenSkyAPIService>('OpenSkyAPIService');
 
   // Refs
   const stateVectorsSubscriptionRef = useRef<string>('');

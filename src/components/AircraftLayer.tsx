@@ -2,7 +2,7 @@ import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Source, Layer } from 'react-map-gl';
 import { FeatureCollection, Geometry, Feature, GeoJsonProperties, Point, Position } from 'geojson';
 import { SymbolLayout, SymbolPaint, Expression, StyleFunction } from 'mapbox-gl';
-import { ServiceContext } from '@daniel.neuweiler/react-lib-module';
+import { GlobalContext } from '@daniel.neuweiler/react-lib-module';
 import { useTheme } from '@material-ui/core/styles';
 
 import { IGeospatialService } from './../services';
@@ -29,8 +29,8 @@ const AircraftLayer: React.FC<Props> = (props) => {
   const [pathPredictions, setPathPredictions] = useState<Array<Feature<Point, GeoJsonProperties>>>([]);
 
   // Contexts
-  const serviceContext = useContext(ServiceContext)
-  const geospatialService = serviceContext.getService<IGeospatialService>('GeospatialService');
+  const globalContext = useContext(GlobalContext)
+  const geospatialService = globalContext.getService<IGeospatialService>('GeospatialService');
 
   // Refs
   const pathPredictionSubscriptionRef = useRef<string>('');
