@@ -1,6 +1,5 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { LogProvider } from '@daniel.neuweiler/ts-lib-module';
-import { ViewContainer, LogRenderer } from '@daniel.neuweiler/react-lib-module';
+import React from 'react';
+import { ViewContainer, AboutContent } from '@daniel.neuweiler/react-lib-module';
 
 interface ILocalProps {
 }
@@ -16,6 +15,7 @@ const AboutView: React.FC<Props> = (props) => {
     <ViewContainer
       isScrollLocked={true}>
 
+      <AboutContent />
     </ViewContainer>
   );
 }
