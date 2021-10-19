@@ -1,23 +1,8 @@
 import React, { useContext } from 'react';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { GlobalContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
-
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
-
+import { Box, Typography, Card, CardContent, FormGroup, FormControlLabel, Switch } from '@mui/material';
+import { SystemContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
 import { ViewKeys } from './navigation';
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    cardRoot: {
-      backgroundColor: theme.palette.grey[500]
-    }
-  }),
-);
+import { CardGiftcardRounded } from '@mui/icons-material';
 
 export class SettingKeys {
   public static ShowDataOverlayOnMap = 'ShowDataOverlayOnMap';
@@ -33,15 +18,12 @@ const SettingsView: React.FC<Props> = (props) => {
   // Fields
   const contextName: string = ViewKeys.SettingsView;
 
-  // External hooks
-  const classes = useStyles();
-
   // Contexts
-  const globalContext = useContext(GlobalContext)
+  const systemContext = useContext(SystemContext)
 
   const getSetting = (key: string, type: string) => {
 
-    const value = globalContext.getSetting(key)
+    const value = systemContext.getSetting(key)
     if (typeof (value) === type)
       return value;
 
@@ -49,18 +31,18 @@ const SettingsView: React.FC<Props> = (props) => {
   };
 
   const handleSettingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    globalContext.storeSetting(e.target.name, e.target.checked);
+    systemContext.storeSetting(e.target.name, e.target.checked);
   };
 
   const renderMapSettings = () => {
 
     return (
-      <Card
-        classes={{
-          root: classes.cardRoot
-        }}>
+      <Card>
 
-        <CardContent>
+        <CardContent
+          sx={{
+            backgroundColor: (theme) => theme.palette.grey[700]
+          }}>
 
           <Typography
             variant={'h6'}
@@ -72,6 +54,7 @@ const SettingsView: React.FC<Props> = (props) => {
             <FormControlLabel
               control={
                 <Switch
+                  color='secondary'
                   name={SettingKeys.ShowDataOverlayOnMap}
                   checked={getSetting(SettingKeys.ShowDataOverlayOnMap, 'boolean')}
                   onChange={handleSettingsChange} />
@@ -81,6 +64,7 @@ const SettingsView: React.FC<Props> = (props) => {
             <FormControlLabel
               control={
                 <Switch
+                  color='secondary'
                   name={SettingKeys.ShowLogOverlayOnMap}
                   checked={getSetting(SettingKeys.ShowLogOverlayOnMap, 'boolean')}
                   onChange={handleSettingsChange} />

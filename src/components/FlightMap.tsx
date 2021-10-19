@@ -1,9 +1,13 @@
-import React, { useContext, useState, useRef, useEffect } from 'react';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import MapGL, { FullscreenControl, NavigationControl, MapLoadEvent, PointerEvent, ViewportProps, ExtraState } from 'react-map-gl';
+/* eslint-disable react/react-in-jsx-scope -- Unaware of jsxImportSource */
+/** @jsxImportSource @emotion/react */
+import React, { useContext, useRef, useState, useEffect } from 'react';
+import { Box } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { jsx } from '@emotion/react';
+import MapGL, { MapRef, FullscreenControl, NavigationControl, MapLoadEvent, MapEvent, ViewportProps, ExtraState } from 'react-map-gl';
 import { Feature } from 'geojson';
 import { svgToImageAsync } from '@daniel.neuweiler/ts-lib-module';
-import { GlobalContext } from '@daniel.neuweiler/react-lib-module';
+import { SystemContext } from '@daniel.neuweiler/react-lib-module';
 
 import AircraftInfoOverlay from './AircraftInfoOverlay';
 import DataOverlay from './DataOverlay';
@@ -19,42 +23,6 @@ import FlightLandFlippedIcon from './../resources/flight_land-24px_flippedx.svg'
 import FlightTakeoffIcon from './../resources/flight_takeoff-24px.svg';
 import FlightTakeoffFlippedIcon from './../resources/flight_takeoff-24px_flippedx.svg';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    fullScreenControlContainer: {
-      position: 'absolute',
-      bottom: 140,
-      right: 0,
-      padding: '10px'
-    },
-    navigationControlContainer: {
-      position: 'absolute',
-      bottom: 38,
-      right: 0,
-      padding: '10px'
-    },
-    dataOverlayContainer: {
-      position: 'absolute',
-      bottom: 48,
-      right: 50,
-    },
-    logOverlayContainer: {
-      position: 'absolute',
-      bottom: 186,
-      right: 50,
-    },
-    mapControl: {
-      backgroundColor: theme.palette.grey[500]
-    },
-    aircraftOverlayContainer: {
-      position: 'absolute',
-      bottom: 38,
-      left: 0,
-      padding: '10px',
-    }
-  }),
-);
-
 interface ILocalProps {
   stateVectors: IStateVectorData;
   selectedAircraft?: IAircraftTrack;
@@ -66,17 +34,14 @@ type Props = ILocalProps;
 
 const FlightMap: React.FC<Props> = (props) => {
 
-  // External hooks
-  const classes = useStyles();
-
   // Contexts
-  const globalContext = useContext(GlobalContext);
+  const systemContext = useContext(SystemContext);
 
   // States
   const [viewportProps, setViewportProps] = useState<ViewportProps | undefined>(undefined);
 
   // Refs
-  const mapRef = useRef<MapGL>(null);
+  const mapRef = useRef<MapRef | null>(null);
 
   // Effects
   useEffect(() => {
@@ -119,10 +84,9 @@ const FlightMap: React.FC<Props> = (props) => {
 
   const handleLoad = (e: MapLoadEvent) => {
 
-    if (!mapRef.current)
+    const map = e.target;
+    if (map == undefined)
       return;
-
-    var map = mapRef.current.getMap();
 
     svgToImageAsync(FlightIcon, 24, 24).then(image => {
 
@@ -146,18 +110,18 @@ const FlightMap: React.FC<Props> = (props) => {
     });
   };
 
-  const handleClick = (e: PointerEvent) => {
+  const handleClick = (e: MapEvent) => {
 
-    if (e.features.length > 0) {
+    if (e.features == undefined || e.features.length <= 0)
+      return;
 
-      const selectedFeature = e.features[0] as Feature;
-      if (selectedFeature.properties) {
+    const selectedFeature = e.features[0] as Feature;
+    if (selectedFeature.properties) {
 
-        const icao24 = selectedFeature.properties['icao24'] as string;
-        if (icao24)
-          if (props.onTrackAircraft)
-            props.onTrackAircraft(icao24);
-      }
+      const icao24 = selectedFeature.properties['icao24'] as string;
+      if (icao24)
+        if (props.onTrackAircraft)
+          props.onTrackAircraft(icao24);
     }
   };
 
@@ -186,8 +150,8 @@ const FlightMap: React.FC<Props> = (props) => {
     maxPitch: 85
   }
 
-  const showDataOverlayOnMap = globalContext.getSetting(SettingKeys.ShowDataOverlayOnMap);
-  const showLogOverlayOnMap = globalContext.getSetting(SettingKeys.ShowLogOverlayOnMap);
+  const showDataOverlayOnMap = systemContext.getSetting(SettingKeys.ShowDataOverlayOnMap);
+  const showLogOverlayOnMap = systemContext.getSetting(SettingKeys.ShowLogOverlayOnMap);
 
   return (
 
@@ -206,32 +170,57 @@ const FlightMap: React.FC<Props> = (props) => {
       onClick={handleClick}
       onViewportChange={handleViewportChange}>
 
-      <div className={classes.fullScreenControlContainer}>
-        <FullscreenControl className={classes.mapControl} />
-      </div>
-      <div className={classes.navigationControlContainer}>
-        <NavigationControl className={classes.mapControl} />
-      </div>
+      <FullscreenControl
+        css={(theme) => ({
+          position: 'absolute',
+          bottom: 144,
+          right: 8,
+          backgroundColor: theme.palette.grey[500]
+        })} />
+      <NavigationControl
+        css={(theme) => ({
+          position: 'absolute',
+          bottom: 48,
+          right: 8,
+          backgroundColor: theme.palette.grey[500]
+        })} />
 
       {showDataOverlayOnMap &&
-        <div className={classes.dataOverlayContainer}>
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 48,
+            right: 50
+          }}>
           <DataOverlay
             stateVectors={props.stateVectors} />
-        </div>
+        </Box>
       }
 
       {showLogOverlayOnMap &&
-        <div className={classes.logOverlayContainer}>
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 186,
+            right: 50
+          }}>
           <LogOverlay />
-        </div>
+        </Box>
       }
 
       {props.selectedAircraft &&
-        <div className={classes.aircraftOverlayContainer}>
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 48,
+            left: 0,
+            padding: '10px'
+          }}>
+
           <AircraftInfoOverlay
             selectedAircraft={props.selectedAircraft}
             onRelease={props.onReleaseTrack} />
-        </div>
+        </Box>
       }
 
       <AircraftLayer

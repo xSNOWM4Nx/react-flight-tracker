@@ -1,42 +1,8 @@
-import React, { useState, useContext, useEffect, useMemo, Suspense } from 'react';
-import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
-import { DefaultStyle } from '@daniel.neuweiler/ts-lib-module';
+import React, { useState, useEffect } from 'react';
+import { Dialog, Box, Typography, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { INavigationElementProps, ViewInjector } from '@daniel.neuweiler/react-lib-module';
-
-import Dialog from '@material-ui/core/Dialog';
-import IconButton from '@material-ui/core/IconButton';
-import CloseIcon from '@material-ui/icons/Close';
-import Typography from '@material-ui/core/Typography';
-
 import { ViewNavigationElements, ViewKeys } from './../views/navigation';
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    dialogPaper: {
-      height: '70%',
-      backgroundColor: DefaultStyle.Palette.backgoundDark,
-      color: DefaultStyle.Palette.contrast2Dark
-    },
-    dialogHeaderRoot: {
-      backgroundColor: theme.palette.primary.main,
-      color: theme.palette.primary.contrastText
-    },
-    dialogHeaderContainer: {
-      margin: theme.spacing(1),
-      display: 'flex',
-      flexDirection: 'row',
-      alignContent: 'center',
-      alignItems: 'center'
-    },
-    dialogContentContainer: {
-      margin: theme.spacing(1),
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden'
-    }
-  }),
-);
 
 interface ILocalProps {
   isVisible: boolean;
@@ -46,9 +12,6 @@ interface ILocalProps {
 type Props = ILocalProps;
 
 const ViewInjectorDialog: React.FC<Props> = (props) => {
-
-  // External hooks
-  const classes = useStyles();
 
   // States
   const [selectedNavigationElement, setSelectedNavigationElement] = useState<INavigationElementProps>(props.navigationElement);
@@ -66,16 +29,27 @@ const ViewInjectorDialog: React.FC<Props> = (props) => {
 
     return (
 
-      <div className={classes.dialogHeaderRoot}>
+      <Box
+        sx={{
+          backgroundColor: (theme) => theme.palette.primary.main,
+          color: (theme) => theme.palette.primary.contrastText
+        }}>
 
-        <div className={classes.dialogHeaderContainer}>
+        <Box
+          sx={{
+            margin: (theme) => theme.spacing(1),
+            display: 'flex',
+            flexDirection: 'row',
+            alignContent: 'center',
+            alignItems: 'center'
+          }}>
 
           <Typography
             variant={'h5'}>
             {selectedNavigationElement.display.value}
           </Typography>
 
-          <div style={{ flex: 'auto' }} />
+          <Box style={{ flex: 'auto' }} />
 
           <IconButton
             color={'inherit'}
@@ -85,16 +59,20 @@ const ViewInjectorDialog: React.FC<Props> = (props) => {
             <CloseIcon />
           </IconButton>
 
-        </div>
-      </div>
+        </Box>
+      </Box>
     )
   };
 
   return (
 
     <Dialog
-      classes={{
-        paper: classes.dialogPaper,
+      sx={{
+        '& .MuiDialog-paper': {
+          height: '70%',
+          backgroundColor: (theme) => theme.palette.background.default,
+          color: (theme) => theme.palette.text.secondary
+        },
       }}
       fullWidth={true}
       maxWidth='sm'
@@ -103,12 +81,19 @@ const ViewInjectorDialog: React.FC<Props> = (props) => {
 
       {renderHeader()}
 
-      <div className={classes.dialogContentContainer}>
+      <Box
+        sx={{
+          margin: (theme) => theme.spacing(1),
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}>
 
         <ViewInjector
           navigationElement={selectedNavigationElement}
           onImportView={navigationElement => React.lazy(() => import(`./../${navigationElement.importPath}`))} />
-      </div>
+      </Box>
 
     </Dialog>
   )

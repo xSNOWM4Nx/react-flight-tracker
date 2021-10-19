@@ -1,22 +1,22 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider, createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
-import blue from '@material-ui/core/colors/blue';
-import pink from '@material-ui/core/colors/pink';
-import { IService, DefaultStyle } from '@daniel.neuweiler/ts-lib-module';
-import { GlobalContextProvider, ViewContainer, Indicator1 } from '@daniel.neuweiler/react-lib-module';
+import { StyledEngineProvider, ThemeProvider, createTheme, responsiveFontSizes } from '@mui/material/styles';
+import { blue, pink } from '@mui/material/colors';
+import { IService } from '@daniel.neuweiler/ts-lib-module';
+import { SystemContextProvider, ViewContainer, Indicator1 } from '@daniel.neuweiler/react-lib-module';
 
-import ContextPage from './ContextPage';
+import AppContextProvider from './../contexts/AppContextProvider';
 import RouterPage from './RouterPage';
 import { OpenSkyAPIService, GeospatialService } from './../services';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@daniel.neuweiler/ts-lib-module/build/src/styles/default.style.css';
-import '@daniel.neuweiler/react-lib-module/dist/styles/default.style.css';
+import '@daniel.neuweiler/react-lib-module/build/styles/default.style.css';
 import './../styles/app.style.css';
 
-var theme = createMuiTheme({
+var theme = createTheme({
   palette: {
+    mode: 'dark',
     primary: blue,
     secondary: pink,
   },
@@ -45,33 +45,36 @@ function App() {
   return (
 
     <BrowserRouter>
-      <ThemeProvider
-        theme={theme}>
+      <StyledEngineProvider
+        injectFirst={true}>
+        <ThemeProvider
+          theme={theme}>
 
-        <Suspense
-          fallback={
-            <div className="page-root">
+          <Suspense
+            fallback={
+              <div className="page-root">
 
-              <ViewContainer
-                isScrollLocked={true}
-                backgroundColor={DefaultStyle.Palette.backgoundDark}>
+                <ViewContainer
+                  isScrollLocked={true}
+                  backgroundColor={theme.palette.background.default}>
 
-                <Indicator1
-                  color={theme.palette.primary.main}
-                  scale={4.0} />
-              </ViewContainer>
-            </div>
-          }>
+                  <Indicator1
+                    color={theme.palette.primary.main}
+                    scale={4.0} />
+                </ViewContainer>
+              </div>
+            }>
 
-          <GlobalContextProvider
-            onInjectCustomServices={handleInjectCustomServices}>
+            <SystemContextProvider
+              onInjectCustomServices={handleInjectCustomServices}>
 
-            <ContextPage>
-              <RouterPage />
-            </ContextPage>
-          </GlobalContextProvider>
-        </Suspense>
-      </ThemeProvider>
+              <AppContextProvider>
+                <RouterPage />
+              </AppContextProvider>
+            </SystemContextProvider>
+          </Suspense>
+        </ThemeProvider>
+      </StyledEngineProvider>
     </BrowserRouter>
   );
 }

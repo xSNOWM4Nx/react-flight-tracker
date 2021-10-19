@@ -12,14 +12,14 @@ The goal of this project is to read the data from [OpenSky Network](https://open
 - [react-lib-module](https://github.com/xSNOWM4Nx/react-lib-module)
 - [TypeScript](https://github.com/microsoft/TypeScript)
 - [react-router](https://github.com/ReactTraining/react-router)
-- [material-ui](https://github.com/mui-org/material-ui)
-- [react-map-gl](https://github.com/uber/react-map-gl)
+- [MUI](https://github.com/mui-org)
+- [react-map-gl](https://github.com/visgl/react-map-gl)
 
 ## 🔮 Features:
 - Using "Hooks", "Context", "Suspense", "React.lazy" and other popular React patterns.
 - Written entirely in TypeScript.
-- Using maps from [mapbox](https://www.mapbox.com/) with the React friendly wrapper [react-map-gl](https://github.com/uber/react-map-gl) from Uber.
-- Using styling components from [material-ui](https://github.com/mui-org/material-ui) project.
+- Using maps from [mapbox](https://www.mapbox.com/) with the React friendly wrapper [react-map-gl](https://github.com/visgl/react-map-gl).
+- Using styling components from [MUI](https://github.com/mui-org) project.
 - Fetching flight data from [OpenSky Network](https://opensky-network.org/).
 
 ## 🔌 Usage:

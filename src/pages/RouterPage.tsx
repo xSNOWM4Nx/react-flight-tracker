@@ -1,41 +1,13 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { INavigationService, ServiceKeys, INavigationRequest, NavigationTypeEnumeration, DefaultStyle } from '@daniel.neuweiler/ts-lib-module';
-import { GlobalContext, SelectableMenu, ISelectableProps } from '@daniel.neuweiler/react-lib-module';
-
-import Fab from '@material-ui/core/Fab';
-import MenuIcon from '@material-ui/icons/Menu';
+import { Box, Fab } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import { INavigationService, ServiceKeys, INavigationRequest, NavigationTypeEnumeration } from '@daniel.neuweiler/ts-lib-module';
+import { SystemContext, SelectableMenu, ISelectableProps } from '@daniel.neuweiler/react-lib-module';
 
 import { ViewNavigationElements, ViewKeys } from './../views/navigation';
 import StartPage from './StartPage';
 import ErrorPage from './ErrorPage';
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      height: '100vh',
-      width: '100vw',
-      userSelect: 'none',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: theme.palette.primary.main
-    },
-    pageContainer: {
-      overflow: 'hidden',
-      flex: 'auto',
-      margin: theme.spacing(1),
-      backgroundColor: DefaultStyle.Palette.backgoundDark,
-      color: DefaultStyle.Palette.contrast2Dark
-    },
-    menuFABContainer: {
-      position: 'absolute',
-      top: theme.spacing(2),
-      left: theme.spacing(2),
-      zIndex: 10
-    },
-  }),
-);
 
 interface ILocalProps {
 }
@@ -49,11 +21,10 @@ const RouterPage: React.FC<Props> = (props) => {
   // External hooks
   const history = useHistory();
   const location = useLocation();
-  const classes = useStyles();
 
   // Contexts
-  const globalContext = useContext(GlobalContext);
-  const navigationService = globalContext.getService<INavigationService>(ServiceKeys.NavigationService);
+  const systemContext = useContext(SystemContext);
+  const navigationService = systemContext.getService<INavigationService>(ServiceKeys.NavigationService);
 
   // States
   const [navigationRequest, setNavigationRequest] = useState<INavigationRequest | undefined>(undefined);
@@ -124,11 +95,32 @@ const RouterPage: React.FC<Props> = (props) => {
 
   return (
 
-    <div className={classes.root}>
+    <Box
+      sx={{
+        height: '100vh',
+        width: '100vw',
+        userSelect: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: (theme) => theme.palette.primary.main
+      }}>
 
-      <div className={classes.pageContainer}>
+      <Box
+        sx={{
+          overflow: 'hidden',
+          flex: 'auto',
+          margin: (theme) => theme.spacing(1),
+          backgroundColor: (theme) => theme.palette.background.default,
+          color: (theme) => theme.palette.text.secondary
+        }}>
 
-        <div className={classes.menuFABContainer}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: (theme) => theme.spacing(2),
+            left: (theme) => theme.spacing(2),
+            zIndex: 10
+          }}>
 
           <Fab
             color="primary"
@@ -138,7 +130,7 @@ const RouterPage: React.FC<Props> = (props) => {
             <MenuIcon />
           </Fab>
 
-        </div>
+        </Box>
 
         {/* Redirect to map on a unknown path */}
         {location.pathname === '/' ? <Redirect from="/" to="start" /> : null}
@@ -170,8 +162,8 @@ const RouterPage: React.FC<Props> = (props) => {
           onSelect={handleMenuSelect}
           onClose={() => setMenuAnchor(null)} />
 
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

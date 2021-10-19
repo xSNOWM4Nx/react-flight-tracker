@@ -14,10 +14,10 @@ interface ILocalProps {
 }
 type Props = ILocalProps;
 
-const ContextPage: React.FC<Props> = (props) => {
+const AppContextProvider: React.FC<Props> = (props) => {
 
   // Fields
-  const contextName: string = 'ContextPage'
+  const contextName: string = 'AppContextProvider'
 
   // States
   const [hasConnectionErrors, setConnectionErrors,] = useState(false);
@@ -34,4 +34,4 @@ const ContextPage: React.FC<Props> = (props) => {
   );
 }
 
-export default ContextPage;
+export default AppContextProvider;

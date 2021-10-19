@@ -1,109 +1,16 @@
+/* eslint-disable react/react-in-jsx-scope -- Unaware of jsxImportSource */
+/** @jsxImportSource @emotion/react */
 import React, { useState, useRef, useEffect } from 'react';
 import { Indicator1 } from '@daniel.neuweiler/react-lib-module';
-import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
 
-import IconButton from '@material-ui/core/IconButton';
-import CloseIcon from '@material-ui/icons/Close';
+import { Box, Typography, IconButton } from '@mui/material';
+import { useTheme, Theme } from '@mui/material/styles';
+import { SxProps } from '@mui/system';
+import { jsx } from '@emotion/react';
+import CloseIcon from '@mui/icons-material/Close';
 
 import { IAircraftTrack, IStateVector } from '../opensky';
 import { getFormattedValue, getIcon, getRotation, getStatusText } from '../helpers';
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    overlayIndicatorRoot: {
-      position: 'relative',
-      minWidth: 268,
-      minHeight: 84,
-      height: '100%',
-      backgroundColor: theme.palette.grey[500],
-      borderRadius: 4,
-      opacity: 0.9,
-      display: 'flex',
-      flexDirection: 'column',
-      alignContent: 'center',
-      alignItems: 'center',
-      justifyContent: 'center',
-      justifyItems: 'center'
-    },
-    overlayRoot: {
-      position: 'relative',
-      minWidth: 268,
-      height: 'auto',
-      width: 'auto',
-      backgroundColor: theme.palette.grey[500],
-      color: theme.palette.grey[900],
-      borderRadius: 4,
-      opacity: 0.9,
-      padding: theme.spacing(1)
-    },
-    headerContainer: {
-      width: '100%',
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      alignContent: 'center'
-    },
-    headerIconContainer: {
-      backgroundColor: theme.palette.primary.main,
-      borderRadius: '50%',
-      width: 36,
-      height: 36,
-      display: 'flex',
-      alignItems: 'center',
-      alignContent: 'center',
-      justifyItems: 'center',
-      justifyContent: 'center',
-      textAlign: 'center'
-    },
-    headerIcon: {
-      fill: '#fff',
-      width: 24,
-      height: 24
-    },
-    headerTextContainer: {
-      marginLeft: 'auto',
-      marginRight: 8,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-end',
-      alignContent: 'flex-end'
-    },
-    headerText1: {
-      fontSize: 24,
-      fontWeight: 'normal'
-    },
-    headerText2: {
-      fontSize: 16,
-      fontWeight: 'normal'
-    },
-    headerLine: {
-      width: '100%',
-      height: 1,
-      marginTop: 8,
-      marginBottom: 16,
-      backgroundColor: '#000'
-    },
-    textContainer: {
-      width: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-start',
-      alignContent: 'flex-start'
-    },
-    textSpace: {
-      height: 8,
-      minHeight: 8
-    },
-    textDescription: {
-      fontSize: 12,
-      fontWeight: 800
-    },
-    textValue: {
-      fontSize: 16,
-      fontWeight: 'normal'
-    }
-  }),
-);
 
 interface ILocalProps {
   selectedAircraft?: IAircraftTrack;
@@ -114,7 +21,6 @@ type Props = ILocalProps;
 const AircraftInfoOverlay: React.FC<Props> = (props) => {
 
   // External hooks
-  const classes = useStyles();
   const theme = useTheme();
 
   // States
@@ -187,24 +93,57 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
 
       <React.Fragment>
 
-        <div className={classes.headerContainer}>
+        <Box
+          sx={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            alignContent: 'center'
+          }}>
 
-          <div className={classes.headerIconContainer}>
+          <Box
+            sx={{
+              backgroundColor: theme.palette.primary.main,
+              borderRadius: '50%',
+              width: 48,
+              height: 48,
+              display: 'flex',
+              alignItems: 'center',
+              alignContent: 'center',
+              justifyItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center'
+            }}>
+
             <FlightIcon
-              className={classes.headerIcon}
-              style={{
-                transform: `rotate(${getRotation(trueTrack, verticalRate, altitude)}deg)`,
-              }} />
-          </div>
+              css={(theme) => ({
+                fill: theme.palette.primary.contrastText,
+                width: 32,
+                height: 32,
+                transform: `rotate(${getRotation(trueTrack, verticalRate, altitude!)}deg)`
+              })} />
+          </Box>
 
-          <div className={classes.headerTextContainer}>
-            <div className={classes.headerText1}>
+          <Box
+            sx={{
+              flex: 'auto',
+              marginLeft: 1,
+              marginRight: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              alignContent: 'flex-start'
+            }}>
+            <Typography
+              variant='h6'>
               {stateVector.callsign ? stateVector.callsign : '?'}
-            </div>
-            <div className={classes.headerText2}>
+            </Typography>
+            <Typography
+              variant='body1'>
               {stateVector.origin_country}
-            </div>
-          </div>
+            </Typography>
+          </Box>
 
           <IconButton
             aria-label="close"
@@ -222,7 +161,16 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
             <CloseIcon color='error' />
           </IconButton>
 
-        </div>
+        </Box>
+
+        <Box
+          sx={{
+            width: '100%',
+            height: 2,
+            marginTop: 1,
+            marginBottom: 2,
+            backgroundColor: (theme) => theme.palette.primary.main
+          }} />
 
       </React.Fragment>
     );
@@ -238,7 +186,7 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
 
     const stateVector = props.selectedAircraft.stateVector;
 
-    var options = {
+    var options: Intl.DateTimeFormatOptions = {
       year: 'numeric', month: 'numeric', day: 'numeric',
       hour: 'numeric', minute: 'numeric', second: 'numeric'
     };
@@ -275,128 +223,174 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
     // Get true track
     const trueTrack = stateVector.true_track ? stateVector.true_track : 0.0;
 
+    var textContainerStyle: SxProps<Theme> = {
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      alignContent: 'flex-start'
+    };
+
+    var spaceStyle: SxProps<Theme> = {
+      height: 8,
+      minHeight: 8
+    };
+
     return (
 
       <React.Fragment>
 
-        <div className={classes.textContainer}>
-          <div className={classes.textDescription}>
+        <Box
+          sx={textContainerStyle}>
+          <Typography
+            variant='body2'>
             {'Last contact'}
-          </div>
-          <div className={classes.textValue}>
+          </Typography>
+          <Typography
+            variant='body1'>
             {`${lastContactTime} [${lastPositionPastSeconds.toString()}s]`}
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className={classes.textSpace} />
+        <Box sx={spaceStyle} />
 
-        <div className={classes.textContainer}>
-          <div className={classes.textDescription}>
+        <Box
+          sx={textContainerStyle}>
+          <Typography
+            variant='body2'>
             {'Last position update'}
-          </div>
-          <div className={classes.textValue}>
+          </Typography>
+          <Typography
+            variant='body1'>
             {`${lastPositionTime} [${lastPositionPastSeconds.toString()}s]`}
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className={classes.textSpace} />
+        <Box sx={spaceStyle} />
 
-        <div className={classes.textContainer}>
-          <div className={classes.textDescription}>
+        <Box
+          sx={textContainerStyle}>
+          <Typography
+            variant='body2'>
             {'Barometric altitude'}
-          </div>
-          <div className={classes.textValue}>
+          </Typography>
+          <Typography
+            variant='body1'>
             {`${getFormattedValue(barometricAltitude, 1)} m [${getFormattedValue(barometricAltitude * 3.28084, 1)} ft.]`}
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className={classes.textSpace} />
+        <Box sx={spaceStyle} />
 
-        <div className={classes.textContainer}>
-          <div className={classes.textDescription}>
+        <Box
+          sx={textContainerStyle}>
+          <Typography
+            variant='body2'>
             {'Geometric altitude'}
-          </div>
-          <div className={classes.textValue}>
+          </Typography>
+          <Typography
+            variant='body1'>
             {`${getFormattedValue(geometricAltitude, 1)} m [${getFormattedValue(geometricAltitude * 3.28084, 1)} ft.]`}
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className={classes.textSpace} />
+        <Box sx={spaceStyle} />
 
-        <div className={classes.textContainer}>
-          <div className={classes.textDescription}>
+        <Box
+          sx={textContainerStyle}>
+          <Typography
+            variant='body2'>
             {'Velocity'}
-          </div>
-          <div className={classes.textValue}>
+          </Typography>
+          <Typography
+            variant='body1'>
             {`${getFormattedValue(velocity * 3.6, 1)} km/h [${getFormattedValue(velocity, 1)} m/s]`}
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className={classes.textSpace} />
+        <Box sx={spaceStyle} />
 
-        <div className={classes.textContainer}>
-          <div className={classes.textDescription}>
+        <Box
+          sx={textContainerStyle}>
+          <Typography
+            variant='body2'>
             {'Longitude / Latitude'}
-          </div>
-          <div className={classes.textValue}>
+          </Typography>
+          <Typography
+            variant='body1'>
             {`${getFormattedValue(stateVector.longitude ? stateVector.longitude : -1, 3)} ° / ${getFormattedValue(stateVector.latitude ? stateVector.latitude : -1, 3)} °`}
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className={classes.textSpace} />
+        <Box sx={spaceStyle} />
 
-        <div className={classes.textContainer}>
-          <div className={classes.textDescription}>
+        <Box
+          sx={textContainerStyle}>
+          <Typography
+            variant='body2'>
             {'Rotation'}
-          </div>
-          <div className={classes.textValue}>
+          </Typography>
+          <Typography
+            variant='body1'>
             {`${getFormattedValue(trueTrack, 1)} °`}
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className={classes.textSpace} />
+        <Box sx={spaceStyle} />
 
-        <div className={classes.textContainer}>
-          <div className={classes.textDescription}>
+        <Box
+          sx={textContainerStyle}>
+          <Typography
+            variant='body2'>
             {'Vertical rate'}
-          </div>
-          <div className={classes.textValue}>
+          </Typography>
+          <Typography
+            variant='body1'>
             {`${getFormattedValue(verticalRate, 1)} m/s`}
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className={classes.textSpace} />
+        <Box sx={spaceStyle} />
 
-        <div className={classes.textContainer}>
-          <div className={classes.textDescription}>
+        <Box
+          sx={textContainerStyle}>
+          <Typography
+            variant='body2'>
             {'Status'}
-          </div>
-          <div className={classes.textValue}>
+          </Typography>
+          <Typography
+            variant='body1'>
             {getStatusText(stateVector.on_ground, verticalRate, altitude)}
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className={classes.textSpace} />
+        <Box sx={spaceStyle} />
 
-        <div className={classes.textContainer}>
-          <div className={classes.textDescription}>
+        <Box
+          sx={textContainerStyle}>
+          <Typography
+            variant='body2'>
             {'ICAO24'}
-          </div>
-          <div className={classes.textValue}>
+          </Typography>
+          <Typography
+            variant='body1'>
             {stateVector.icao24}
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className={classes.textSpace} />
+        <Box sx={spaceStyle} />
 
-        <div className={classes.textContainer}>
-          <div className={classes.textDescription}>
+        <Box
+          sx={textContainerStyle}>
+          <Typography
+            variant='body2'>
             {'Transpondercode [Squawk]'}
-          </div>
-          <div className={classes.textValue}>
+          </Typography>
+          <Typography
+            variant='body1'>
             {stateVector.squawk ? stateVector.squawk : -1}
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
       </React.Fragment>
     );
@@ -404,19 +398,47 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
 
   if (!props.selectedAircraft)
     return (
-      <div className={classes.overlayIndicatorRoot}>
+
+      <Box
+        sx={{
+          position: 'relative',
+          minWidth: 268,
+          minHeight: 84,
+          height: '100%',
+          backgroundColor: theme.palette.grey[500],
+          borderRadius: 4,
+          opacity: 0.9,
+          display: 'flex',
+          flexDirection: 'column',
+          alignContent: 'center',
+          alignItems: 'center',
+          justifyContent: 'center',
+          justifyItems: 'center'
+        }}>
+
         <Indicator1
           color={theme.palette.primary.main} />
-      </div>
+      </Box>
     );
 
   return (
 
-    <div className={classes.overlayRoot}>
+    <Box
+      sx={{
+        position: 'relative',
+        minWidth: 268,
+        height: 'auto',
+        width: 'auto',
+        backgroundColor: theme.palette.grey[500],
+        color: theme.palette.grey[900],
+        borderRadius: 4,
+        opacity: 0.9,
+        padding: theme.spacing(1)
+      }}>
+
       {renderHeader()}
-      <div className={classes.headerLine} />
       {renderFlightData()}
-    </div>
+    </Box>
   );
 }
 

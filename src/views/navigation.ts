@@ -1,10 +1,10 @@
 import { NavigationElementProps } from '@daniel.neuweiler/react-lib-module';
 
-import ErrorIcon from '@material-ui/icons/Error';
-import FlightIcon from '@material-ui/icons/Flight';
-import SettingsIcon from '@material-ui/icons/Settings';
-import CodeIcon from '@material-ui/icons/Code';
-import InfoIcon from '@material-ui/icons/Info';
+import ErrorIcon from '@mui/icons-material/Error';
+import FlightIcon from '@mui/icons-material/Flight';
+import SettingsIcon from '@mui/icons-material/Settings';
+import CodeIcon from '@mui/icons-material/Code';
+import InfoIcon from '@mui/icons-material/Info';
 
 export class ViewKeys {
 
