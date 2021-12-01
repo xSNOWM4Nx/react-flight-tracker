@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { RouteComponentProps } from 'react-router-dom';
 import { INavigationRequest, NavigationTypeEnumeration } from '@daniel.neuweiler/ts-lib-module';
 import { ViewInjector, INavigationElementProps } from '@daniel.neuweiler/react-lib-module';
 
@@ -10,7 +9,7 @@ interface ILocalProps {
   navigationRequest?: INavigationRequest;
   onNavigationError: (sourceName: string, errorMessage: string) => void;
 }
-type Props = ILocalProps & RouteComponentProps<{}>;
+type Props = ILocalProps;
 
 const StartPage: React.FC<Props> = (props) => {
 

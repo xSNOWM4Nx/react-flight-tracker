@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
-import { Switch, Route, Redirect, useHistory, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Box, Fab } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { INavigationService, ServiceKeys, INavigationRequest, NavigationTypeEnumeration } from '@daniel.neuweiler/ts-lib-module';
@@ -19,8 +19,7 @@ const RouterPage: React.FC<Props> = (props) => {
   const contextName: string = 'RouterPage'
 
   // External hooks
-  const history = useHistory();
-  const location = useLocation();
+  const navigate = useNavigate();
 
   // Contexts
   const systemContext = useContext(SystemContext);
@@ -70,7 +69,7 @@ const RouterPage: React.FC<Props> = (props) => {
     errorMessageRef.current = errorMessage;
 
     // Go to error page
-    history.push('/error');
+    navigate('/error');
   };
 
   const handleNavigationRequest = (navigationRequest: INavigationRequest) => {
@@ -78,7 +77,7 @@ const RouterPage: React.FC<Props> = (props) => {
     setNavigationRequest(navigationRequest);
 
     if (navigationRequest.url !== undefined)
-      history.push(navigationRequest.url);
+      navigate(navigationRequest.url);
   };
 
   const handleMenuButtonClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -132,28 +131,31 @@ const RouterPage: React.FC<Props> = (props) => {
 
         </Box>
 
-        {/* Redirect to map on a unknown path */}
-        {location.pathname === '/' ? <Redirect from="/" to="start" /> : null}
+        <Routes>
 
-        <Switch>
+          {/* Redirect to 'StartPage' on a unknown path */}
+          <Route
+            path="/"
+            element={
+              <Navigate
+                replace to="/start" />
+            } />
 
           <Route
             path="/start"
-            render={(routeProps) =>
+            element={
               <StartPage
-                {...routeProps}
                 navigationRequest={navigationRequest}
                 onNavigationError={handleNavigationError} />
             }
           />
           <Route
             path="/error"
-            render={(routeProps) =>
-              <ErrorPage
-                {...routeProps} />
+            element={
+              <ErrorPage />
             } />
 
-        </Switch>
+        </Routes>
 
         <SelectableMenu
           anchor={menuAnchor}

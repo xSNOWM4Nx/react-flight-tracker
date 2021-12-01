@@ -1,5 +1,4 @@
 import React from 'react';
-import { RouteComponentProps } from 'react-router-dom';
 import { ErrorContent } from '@daniel.neuweiler/react-lib-module';
 import { Box } from '@mui/material';
 
@@ -7,7 +6,7 @@ interface ILocalProps {
   sourceName?: string;
   errorMessage?: string;
 }
-type Props = ILocalProps & RouteComponentProps<{}>;
+type Props = ILocalProps;
 
 const ErrorPage: React.FC<Props> = (props) => {
 

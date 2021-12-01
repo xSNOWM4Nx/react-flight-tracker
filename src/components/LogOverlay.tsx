@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Divider } from '@mui/material';
 import { LogProvider } from '@daniel.neuweiler/ts-lib-module';
-import { ScrollContainer, getIconByLogLevel } from '@daniel.neuweiler/react-lib-module';
+import { ScrollContainer, getLogIcon } from '@daniel.neuweiler/react-lib-module';
 
 interface ILocalProps {
 }
@@ -17,7 +17,7 @@ const LogOverlay: React.FC<Props> = (props) => {
 
         {LogProvider.archive.map((log, index) => {
 
-          var LogIcon = getIconByLogLevel(log);
+          var LogIcon = getLogIcon(log);
 
           return (
 
