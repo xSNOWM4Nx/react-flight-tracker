@@ -16,6 +16,8 @@ interface ILocalProps {
 }
 type Props = ILocalProps;
 
+export const aircraftLayerId = 'aircrafts';
+
 const AircraftLayer: React.FC<Props> = (props) => {
 
   // Fields
@@ -260,7 +262,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
       data={featureCollection}>
 
       <Layer
-        id='aircrafts'
+        id={aircraftLayerId}
         type='symbol'
         source='geojson'
         layout={getSymbolLayout()}

@@ -1,10 +1,6 @@
-/* eslint-disable react/react-in-jsx-scope -- Unaware of jsxImportSource */
-/** @jsxImportSource @emotion/react */
 import React, { useContext, useRef, useState, useEffect } from 'react';
-import { Box } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { jsx } from '@emotion/react';
-import MapGL, { MapRef, FullscreenControl, NavigationControl, MapLoadEvent, MapEvent, ViewportProps, ExtraState } from 'react-map-gl';
+import { Box, useTheme } from '@mui/material';
+import Map, { MapRef, FullscreenControl, NavigationControl, ViewState, ViewStateChangeEvent, MapboxEvent, MapLayerMouseEvent } from 'react-map-gl';
 import { Feature } from 'geojson';
 import { svgToImageAsync } from '@daniel.neuweiler/ts-lib-module';
 import { SystemContext } from '@daniel.neuweiler/react-lib-module';
@@ -12,7 +8,7 @@ import { SystemContext } from '@daniel.neuweiler/react-lib-module';
 import AircraftInfoOverlay from './AircraftInfoOverlay';
 import DataOverlay from './DataOverlay';
 import LogOverlay from './LogOverlay';
-import AircraftLayer from './AircraftLayer';
+import AircraftLayer, { aircraftLayerId } from './AircraftLayer';
 import { Constants } from './../mapbox';
 import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
 import { SettingKeys } from './../views/SettingsView';
@@ -26,7 +22,7 @@ import FlightTakeoffFlippedIcon from './../resources/flight_takeoff-24px_flipped
 interface ILocalProps {
   stateVectors: IStateVectorData;
   selectedAircraft?: IAircraftTrack;
-  onMapChange?: (viewState: ViewportProps, geoBounds: IMapGeoBounds) => void;
+  onMapChange?: (viewState: ViewState, geoBounds: IMapGeoBounds) => void;
   onTrackAircraft?: (icao24: string) => void;
   onReleaseTrack?: (icao24: string) => void;
 }
@@ -34,11 +30,33 @@ type Props = ILocalProps;
 
 const FlightMap: React.FC<Props> = (props) => {
 
+  // External hooks
+  const styleTheme = useTheme();
+
   // Contexts
   const systemContext = useContext(SystemContext);
 
+  const getDefaultViewState = () => {
+
+    const defaultViewState: ViewState = {
+      latitude: Constants.DEFAULT_LATITUDE,
+      longitude: Constants.DEFAULT_LONGITUDE,
+      zoom: Constants.DEFAULT_ZOOM,
+      bearing: 0,
+      pitch: 0,
+      padding: {
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0
+      }
+    };
+
+    return defaultViewState;
+  };
+
   // States
-  const [viewportProps, setViewportProps] = useState<ViewportProps | undefined>(undefined);
+  const [viewState, setViewState] = useState<ViewState>(getDefaultViewState());
 
   // Refs
   const mapRef = useRef<MapRef | null>(null);
@@ -55,8 +73,8 @@ const FlightMap: React.FC<Props> = (props) => {
   useEffect(() => {
 
     const mapGeoBounds = getMapGeoBounds();
-    if (props.onMapChange && viewportProps)
-      props.onMapChange(viewportProps, mapGeoBounds);
+    if (props.onMapChange)
+      props.onMapChange(viewState, mapGeoBounds);
 
   }, [mapRef.current]);
 
@@ -71,8 +89,8 @@ const FlightMap: React.FC<Props> = (props) => {
 
     if (mapRef.current) {
 
-      const mapGL = mapRef.current.getMap();
-      const mapBounds = mapGL.getBounds();
+      const map = mapRef.current.getMap();
+      const mapBounds = map.getBounds();
       mapGeoBounds.northernLatitude = mapBounds.getNorthEast().lat;
       mapGeoBounds.easternLongitude = mapBounds.getNorthEast().lng;
       mapGeoBounds.southernLatitude = mapBounds.getSouthWest().lat;
@@ -82,7 +100,7 @@ const FlightMap: React.FC<Props> = (props) => {
     return mapGeoBounds;
   };
 
-  const handleLoad = (e: MapLoadEvent) => {
+  const handleLoad = (e: MapboxEvent<undefined>) => {
 
     const map = e.target;
     if (map == undefined)
@@ -110,7 +128,7 @@ const FlightMap: React.FC<Props> = (props) => {
     });
   };
 
-  const handleClick = (e: MapEvent) => {
+  const handleClick = (e: MapLayerMouseEvent) => {
 
     if (e.features == undefined || e.features.length <= 0)
       return;
@@ -125,23 +143,20 @@ const FlightMap: React.FC<Props> = (props) => {
     }
   };
 
-  const handleViewportChange = (viewState: ViewportProps, interactionState: ExtraState, oldViewState: ViewportProps) => {
+  const handleMove = (e: ViewStateChangeEvent) => {
 
-    setViewportProps(viewState);
+    setViewState(e.viewState);
 
     const mapGeoBounds = getMapGeoBounds();
     if (props.onMapChange)
       props.onMapChange(viewState, mapGeoBounds);
-
   };
 
   // Helpers
-  const settings = {
+  const defaultMapSettings = {
     dragPan: true,
     dragRotate: false,
     scrollZoom: true,
-    touchZoom: true,
-    touchRotate: true,
     keyboard: true,
     doubleClickZoom: true,
     minZoom: 0,
@@ -155,35 +170,34 @@ const FlightMap: React.FC<Props> = (props) => {
 
   return (
 
-    <MapGL
+    <Map
       ref={mapRef}
-      zoom={Constants.DEFAULT_ZOOM}
-      latitude={Constants.DEFAULT_LATITUDE}
-      longitude={Constants.DEFAULT_LONGITUDE}
-      {...viewportProps}
-      {...settings}
-      width={'100%'}
-      height={'100%'}
+      style={{
+        width: '100%',
+        height: '100%'
+      }}
+      {...viewState}
+      {...defaultMapSettings}
+      interactiveLayerIds={[
+        aircraftLayerId
+      ]}
       mapStyle="mapbox://styles/mapbox/dark-v10"
-      mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
+      mapboxAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
       onLoad={handleLoad}
       onClick={handleClick}
-      onViewportChange={handleViewportChange}>
+      onMove={handleMove}>
 
       <FullscreenControl
-        css={(theme) => ({
-          position: 'absolute',
-          bottom: 144,
-          right: 8,
-          backgroundColor: theme.palette.grey[500]
-        })} />
+        position='bottom-right'
+        style={{
+          backgroundColor: styleTheme.palette.grey[500]
+        }} />
+
       <NavigationControl
-        css={(theme) => ({
-          position: 'absolute',
-          bottom: 48,
-          right: 8,
-          backgroundColor: theme.palette.grey[500]
-        })} />
+        position='bottom-right'
+        style={{
+          backgroundColor: styleTheme.palette.grey[500]
+        }} />
 
       {showDataOverlayOnMap &&
         <Box
@@ -225,10 +239,10 @@ const FlightMap: React.FC<Props> = (props) => {
 
       <AircraftLayer
         stateVectors={props.stateVectors}
-        zoom={viewportProps ? viewportProps.zoom : undefined}
+        zoom={viewState.zoom}
         selectedAircraft={props.selectedAircraft} />
 
-    </MapGL>
+    </Map>
   );
 }
 

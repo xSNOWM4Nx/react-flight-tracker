@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
-import { ViewportProps } from 'react-map-gl';
+import { ViewState } from 'react-map-gl';
 import { SystemContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
 
 import { ViewKeys } from './navigation';
@@ -67,7 +67,7 @@ const MapView: React.FC<Props> = (props) => {
     setTrackedAircraft(data);
   };
 
-  const handleMapChange = (viewState: ViewportProps, geoBounds: IMapGeoBounds) => {
+  const handleMapChange = (viewState: ViewState, geoBounds: IMapGeoBounds) => {
 
     if (openSkyAPIService)
       openSkyAPIService.geoBounds = geoBounds;
