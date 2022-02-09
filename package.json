@@ -1,10 +1,10 @@
 {
   "name": "react-flight-tracker",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "dependencies": {
     "@daniel.neuweiler/ts-lib-module": "0.1.0-alpha.17",
-    "@daniel.neuweiler/react-lib-module": "0.1.0-alpha.14",
+    "@daniel.neuweiler/react-lib-module": "0.1.0-alpha.15",
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
     "@mui/material": "^5.4.0",

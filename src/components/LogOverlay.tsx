@@ -29,9 +29,7 @@ const LogOverlay: React.FC<Props> = (props) => {
                   display: 'flex',
                   flexDirection: 'row',
                   alignContent: 'center',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  justifyItems: 'center'
+                  alignItems: 'center'
                 }}>
 
                 <LogIcon />
@@ -64,9 +62,9 @@ const LogOverlay: React.FC<Props> = (props) => {
         position: 'relative',
         width: 160,
         height: 384,
-        backgroundColor: (theme) => theme.palette.grey[500],
-        color: (theme) => theme.palette.grey[900],
-        borderRadius: 4,
+        backgroundColor: (theme) => theme.palette.background.paper,
+        borderRadius: 2,
+        boxShadow: 5,
         opacity: 0.9,
         padding: (theme) => theme.spacing(1)
       }}>

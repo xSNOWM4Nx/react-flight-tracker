@@ -15,9 +15,9 @@ const DataOverlay: React.FC<Props> = (props) => {
         position: 'relative',
         width: 160,
         height: 116,
-        backgroundColor: (theme) => theme.palette.grey[500],
-        color: (theme) => theme.palette.grey[900],
-        borderRadius: 4,
+        backgroundColor: (theme) => theme.palette.background.paper,
+        borderRadius: 2,
+        boxShadow: 5,
         opacity: 0.9,
         padding: (theme) => theme.spacing(1)
       }}>

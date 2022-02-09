@@ -24,7 +24,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
   const contextName: string = 'AircraftLayer'
 
   // External hooks
-  const theme = useTheme();
+  const styleTheme = useTheme();
 
   // States
   const [featureCollection, setFeatureCollection] = useState<FeatureCollection | undefined>(undefined);
@@ -91,7 +91,6 @@ const AircraftLayer: React.FC<Props> = (props) => {
   }, [pathPredictions]);
 
   const handlePathPredictionUpdated = (destinations: Array<Feature<Point, GeoJsonProperties>>) => {
-
     setPathPredictions(destinations);
   };
 
@@ -147,9 +146,9 @@ const AircraftLayer: React.FC<Props> = (props) => {
         // Claculate color
         var color = getColor(altitude);
         if (isOnGround)
-          color = '#e3f2fd';
+          color = styleTheme.palette.text.secondary;
         if (isSelected)
-          color = theme.palette.primary.main;
+          color = styleTheme.palette.primary.main;
 
         var properties: GeoJsonProperties = {
           ['iconName']: getIconName(isOnGround, verticalRate, altitude, trueTrack),
@@ -199,9 +198,9 @@ const AircraftLayer: React.FC<Props> = (props) => {
     const detailedText = ['format',
       ["get", "callsign"], { "font-scale": 1.0 },
       "\n", {},
-      ["get", "altitude"], { "font-scale": 0.75, "text-color": '#fff' },
+      ["get", "altitude"], { "font-scale": 0.75, "text-color": styleTheme.palette.text.primary },
       "\n", {},
-      ["get", "velocity"], { "font-scale": 0.75, "text-color": '#fff' }
+      ["get", "velocity"], { "font-scale": 0.75, "text-color": styleTheme.palette.text.primary }
     ] as StyleFunction;
 
     if (props.zoom && props.zoom > 7)
@@ -245,7 +244,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
       "icon-color": ["get", "color"],
       "text-color": ["get", "color"],
       "text-halo-width": 2,
-      "text-halo-color": '#000',
+      "text-halo-color": styleTheme.palette.background.default,
       "text-halo-blur": 2
     };
 

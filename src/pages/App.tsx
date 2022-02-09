@@ -1,7 +1,8 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { StyledEngineProvider, ThemeProvider, createTheme, responsiveFontSizes } from '@mui/material/styles';
-import { blue, pink } from '@mui/material/colors';
+import { ThemeKeys, DarkTheme, LightTheme, PineappleTheme } from './../styles/';
+import { StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
+import { Box, CssBaseline } from '@mui/material';
 import { IService } from '@daniel.neuweiler/ts-lib-module';
 import { SystemContextProvider, ViewContainer, Indicator1 } from '@daniel.neuweiler/react-lib-module';
 
@@ -14,20 +15,31 @@ import '@daniel.neuweiler/ts-lib-module/build/src/styles/default.style.css';
 import '@daniel.neuweiler/react-lib-module/build/styles/default.style.css';
 import './../styles/app.style.css';
 
-var theme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: blue,
-    secondary: pink,
-  },
-  typography: {
-    htmlFontSize: 10,
-  },
-});
+const App: React.FC = () => {
 
-theme = responsiveFontSizes(theme);
+  // States
+  const [themeName, setThemeName] = useState(ThemeKeys.DarkTheme);
 
-function App() {
+  const getTheme = () => {
+
+    switch (themeName) {
+      case ThemeKeys.DarkTheme: {
+        return DarkTheme;
+      };
+      case ThemeKeys.LightTheme: {
+        return LightTheme;
+      };
+      case ThemeKeys.PineappleTheme: {
+        return PineappleTheme;
+      };
+      default:
+        return DarkTheme;
+    };
+  };
+
+  const handleThemeChange = (themeName: string) => {
+    setThemeName(themeName);
+  };
 
   const handleInjectCustomServices = () => {
 
@@ -42,33 +54,50 @@ function App() {
     return services;
   };
 
+  const renderFallback = () => {
+
+    const theme = getTheme();
+
+    return (
+
+      <Box
+        sx={{
+          height: '100vh',
+          width: '100vw',
+          overflow: 'hidden',
+          userSelect: 'none',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+
+        <ViewContainer
+          isScrollLocked={true}>
+
+          <Indicator1
+            color={theme.palette.primary.main}
+            scale={4.0} />
+        </ViewContainer>
+      </Box>
+    );
+  };
+
   return (
 
     <BrowserRouter>
       <StyledEngineProvider
         injectFirst={true}>
         <ThemeProvider
-          theme={theme}>
+          theme={getTheme()}>
 
           <Suspense
-            fallback={
-              <div className="page-root">
-
-                <ViewContainer
-                  isScrollLocked={true}
-                  backgroundColor={theme.palette.background.default}>
-
-                  <Indicator1
-                    color={theme.palette.primary.main}
-                    scale={4.0} />
-                </ViewContainer>
-              </div>
-            }>
+            fallback={renderFallback()}>
 
             <SystemContextProvider
               onInjectCustomServices={handleInjectCustomServices}>
 
-              <AppContextProvider>
+              <AppContextProvider
+                onThemeChange={handleThemeChange}>
+                <CssBaseline />
                 <RouterPage />
               </AppContextProvider>
             </SystemContextProvider>

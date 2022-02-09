@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
-import { Box, Typography, Card, CardContent, FormGroup, FormControlLabel, Switch } from '@mui/material';
+import { Box, Typography, Card, CardContent, FormGroup, FormControl, FormControlLabel, InputLabel, Switch, Select, SelectChangeEvent, MenuItem } from '@mui/material';
 import { SystemContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
+import { AppContext } from './../contexts';
 import { ViewKeys } from './navigation';
-import { CardGiftcardRounded } from '@mui/icons-material';
+import { ThemeKeys } from './../styles';
 
 export class SettingKeys {
   public static ShowDataOverlayOnMap = 'ShowDataOverlayOnMap';
@@ -19,7 +20,8 @@ const SettingsView: React.FC<Props> = (props) => {
   const contextName: string = ViewKeys.SettingsView;
 
   // Contexts
-  const systemContext = useContext(SystemContext)
+  const systemContext = useContext(SystemContext);
+  const appContext = useContext(AppContext);
 
   const getSetting = (key: string, type: string) => {
 
@@ -30,8 +32,62 @@ const SettingsView: React.FC<Props> = (props) => {
     return false;
   };
 
+  const handleChange = (e: SelectChangeEvent) => {
+    appContext.changeTheme(e.target.value);
+  };
+
   const handleSettingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     systemContext.storeSetting(e.target.name, e.target.checked);
+  };
+
+  const renderAppSettings = () => {
+
+    return (
+      <Card>
+
+        <CardContent>
+
+          <Typography
+            variant={'h6'}
+            gutterBottom={true}>
+            {'App settings'}
+          </Typography>
+
+          <FormGroup>
+            <FormControl
+              color='secondary'
+              variant="filled"
+              sx={{ m: 1, minWidth: 120 }}>
+
+              <InputLabel
+                id="demo-simple-select-filled-label">
+                Theme change
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-filled-label"
+                id="demo-simple-select-filled"
+                value={appContext.activeThemeName}
+                onChange={handleChange}>
+
+                <MenuItem
+                  value={ThemeKeys.DarkTheme}>
+                  {ThemeKeys.DarkTheme}
+                </MenuItem>
+                <MenuItem
+                  value={ThemeKeys.LightTheme}>
+                  {ThemeKeys.LightTheme}
+                </MenuItem>
+                <MenuItem
+                  value={ThemeKeys.PineappleTheme}>
+                  {ThemeKeys.PineappleTheme}
+                </MenuItem>
+              </Select>
+            </FormControl>
+
+          </FormGroup>
+        </CardContent>
+      </Card>
+    );
   };
 
   const renderMapSettings = () => {
@@ -39,10 +95,7 @@ const SettingsView: React.FC<Props> = (props) => {
     return (
       <Card>
 
-        <CardContent
-          sx={{
-            backgroundColor: (theme) => theme.palette.grey[700]
-          }}>
+        <CardContent>
 
           <Typography
             variant={'h6'}
@@ -81,6 +134,10 @@ const SettingsView: React.FC<Props> = (props) => {
 
     <ViewContainer
       isScrollLocked={true}>
+
+      {renderAppSettings()}
+
+      <Box sx={{ height: (theme) => theme.spacing(1) }} />
 
       {renderMapSettings()}
     </ViewContainer>

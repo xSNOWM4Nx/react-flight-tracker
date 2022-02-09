@@ -1,6 +1,6 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import { Box, useTheme } from '@mui/material';
-import Map, { MapRef, FullscreenControl, NavigationControl, ViewState, ViewStateChangeEvent, MapboxEvent, MapLayerMouseEvent } from 'react-map-gl';
+import ReactMap, { MapRef, FullscreenControl, NavigationControl, ViewState, ViewStateChangeEvent, MapboxEvent, MapLayerMouseEvent, MapStyleDataEvent } from 'react-map-gl';
 import { Feature } from 'geojson';
 import { svgToImageAsync } from '@daniel.neuweiler/ts-lib-module';
 import { SystemContext } from '@daniel.neuweiler/react-lib-module';
@@ -18,6 +18,7 @@ import FlightLandIcon from './../resources/flight_land-24px.svg';
 import FlightLandFlippedIcon from './../resources/flight_land-24px_flippedx.svg';
 import FlightTakeoffIcon from './../resources/flight_takeoff-24px.svg';
 import FlightTakeoffFlippedIcon from './../resources/flight_takeoff-24px_flippedx.svg';
+import { Map } from 'mapbox-gl';
 
 interface ILocalProps {
   stateVectors: IStateVectorData;
@@ -100,32 +101,51 @@ const FlightMap: React.FC<Props> = (props) => {
     return mapGeoBounds;
   };
 
+  const addMapSources = (map: Map) => {
+
+    svgToImageAsync(FlightIcon, 24, 24).then(image => {
+
+      if (!map.hasImage('flight-icon'))
+        map.addImage('flight-icon', image, { sdf: true });
+    });
+    svgToImageAsync(FlightLandIcon, 24, 24).then(image => {
+
+      if (!map.hasImage('flight-land-icon'))
+        map.addImage('flight-land-icon', image, { sdf: true });
+    });
+    svgToImageAsync(FlightLandFlippedIcon, 24, 24).then(image => {
+
+      if (!map.hasImage('flight-land-flipped-icon'))
+        map.addImage('flight-land-flipped-icon', image, { sdf: true });
+    });
+    svgToImageAsync(FlightTakeoffIcon, 24, 24).then(image => {
+
+      if (!map.hasImage('flight-takeoff-icon'))
+        map.addImage('flight-takeoff-icon', image, { sdf: true });
+    });
+    svgToImageAsync(FlightTakeoffFlippedIcon, 24, 24).then(image => {
+
+      if (!map.hasImage('flight-takeoff-flipped-icon'))
+        map.addImage('flight-takeoff-flipped-icon', image, { sdf: true });
+    });
+  };
+
   const handleLoad = (e: MapboxEvent<undefined>) => {
 
     const map = e.target;
     if (map == undefined)
       return;
 
-    svgToImageAsync(FlightIcon, 24, 24).then(image => {
+    addMapSources(map);
+  };
 
-      map.addImage('flight-icon', image, { sdf: true });
-    });
-    svgToImageAsync(FlightLandIcon, 24, 24).then(image => {
+  const handleStyleData = (e: MapStyleDataEvent) => {
 
-      map.addImage('flight-land-icon', image, { sdf: true });
-    });
-    svgToImageAsync(FlightLandFlippedIcon, 24, 24).then(image => {
+    const map = e.target;
+    if (map == undefined)
+      return;
 
-      map.addImage('flight-land-flipped-icon', image, { sdf: true });
-    });
-    svgToImageAsync(FlightTakeoffIcon, 24, 24).then(image => {
-
-      map.addImage('flight-takeoff-icon', image, { sdf: true });
-    });
-    svgToImageAsync(FlightTakeoffFlippedIcon, 24, 24).then(image => {
-
-      map.addImage('flight-takeoff-flipped-icon', image, { sdf: true });
-    });
+    addMapSources(map);
   };
 
   const handleClick = (e: MapLayerMouseEvent) => {
@@ -170,7 +190,7 @@ const FlightMap: React.FC<Props> = (props) => {
 
   return (
 
-    <Map
+    <ReactMap
       ref={mapRef}
       style={{
         width: '100%',
@@ -181,23 +201,18 @@ const FlightMap: React.FC<Props> = (props) => {
       interactiveLayerIds={[
         aircraftLayerId
       ]}
-      mapStyle="mapbox://styles/mapbox/dark-v10"
+      mapStyle={styleTheme.map.style}
       mapboxAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
       onLoad={handleLoad}
       onClick={handleClick}
-      onMove={handleMove}>
+      onMove={handleMove}
+      onStyleData={handleStyleData}>
 
       <FullscreenControl
-        position='bottom-right'
-        style={{
-          backgroundColor: styleTheme.palette.grey[500]
-        }} />
+        position='bottom-right' />
 
       <NavigationControl
-        position='bottom-right'
-        style={{
-          backgroundColor: styleTheme.palette.grey[500]
-        }} />
+        position='bottom-right' />
 
       {showDataOverlayOnMap &&
         <Box
@@ -242,7 +257,7 @@ const FlightMap: React.FC<Props> = (props) => {
         zoom={viewState.zoom}
         selectedAircraft={props.selectedAircraft} />
 
-    </Map>
+    </ReactMap>
   );
 }
 
