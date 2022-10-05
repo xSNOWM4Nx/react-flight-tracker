@@ -25,7 +25,7 @@ The goal of this project is to read the data from [OpenSky Network](https://open
 ## 🔌 Usage:
 To use the maps from [mapbox](https://www.mapbox.com/), you need an appropriate token. You can create one on their website by registering there. Registration is free and all relevant things are covered for development purposes.
 
-For the use of the flight data via [OpenSky Network](https://opensky-network.org/), I would also recommend creating a corresponding account on their website. The flight data is then provided with a delay of ~5 seconds. Without an account, the delay is ~10 seconds.
+For the use of the flight data via [The OpenSky Network](https://opensky-network.org/), I would also recommend creating a corresponding account on their website. The flight data is then provided with a delay of ~5 seconds. Without an account, the delay is ~10 seconds.
 
 Start by cloning the repository and install the packages:
 ```
@@ -44,5 +44,6 @@ npm start
 
 ## 📑 License:
 - MIT © [xSNOWM4Nx](https://github.com/xSNOWM4Nx)
+- 
 ---
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

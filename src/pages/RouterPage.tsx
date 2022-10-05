@@ -2,7 +2,7 @@ import React, { useContext, useRef, useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Box, Fab } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { INavigationService, ServiceKeys, INavigationRequest, NavigationTypeEnumeration } from '@daniel.neuweiler/ts-lib-module';
+import { INavigationService, ServiceKeys, INavigationRequest, NavigationTypeEnumeration, INavigationElementBase } from '@daniel.neuweiler/ts-lib-module';
 import { SystemContext, SelectableMenu, ISelectableProps } from '@daniel.neuweiler/react-lib-module';
 
 import { ViewNavigationElements, ViewKeys } from './../views/navigation';
@@ -88,8 +88,11 @@ const RouterPage: React.FC<Props> = (props) => {
 
     setMenuAnchor(null);
 
+    const navigationElement = item as INavigationElementBase;
+    navigationElement.type = NavigationTypeEnumeration.Dialog;
+
     if (navigationService)
-      navigationService.show(item.key, NavigationTypeEnumeration.Dialog);
+      navigationService.show(navigationElement);
   };
 
   return (

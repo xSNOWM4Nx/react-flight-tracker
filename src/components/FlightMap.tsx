@@ -185,6 +185,7 @@ const FlightMap: React.FC<Props> = (props) => {
     maxPitch: 85
   }
 
+  // Get settings
   const showDataOverlayOnMap = systemContext.getSetting(SettingKeys.ShowDataOverlayOnMap);
   const showLogOverlayOnMap = systemContext.getSetting(SettingKeys.ShowLogOverlayOnMap);
 

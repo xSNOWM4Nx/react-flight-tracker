@@ -16,6 +16,7 @@ export const AppContext = React.createContext<AppContextProps>({
 });
 
 interface ILocalProps {
+  children?: React.ReactNode;
   onThemeChange?: (themeName: string) => void;
 };
 type Props = ILocalProps;
