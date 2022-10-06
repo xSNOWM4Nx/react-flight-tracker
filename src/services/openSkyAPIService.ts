@@ -224,7 +224,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     if (this.userName && this.password) {
 
       this.hasCredentials = true;
-      this.restService.setAuthorization(`Basic ${btoa(`${this.userName}:${this.password}`)}`);
+      this.restService.setAuthorization(`Basic ${btoa(`${this.userName}:${this.password}`)}`); // Buffer.from(authString).toString('base64')
 
       this.userName = undefined;
       this.password = undefined;
