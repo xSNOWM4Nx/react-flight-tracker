@@ -277,6 +277,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
         squawk: rawStateVector[14],
         spi: rawStateVector[15],
         position_source: rawStateVector[16],
+        category: rawStateVector[17],
       }
 
       data.states.push(stateVector);
@@ -295,7 +296,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
 
     this.isFetchingStateVectors = true;
 
-    var stateBounds = `?lamin=${this.geoBounds.southernLatitude}&lomin=${this.geoBounds.westernLongitude}&lamax=${this.geoBounds.northernLatitude}&lomax=${this.geoBounds.easternLongitude}`;
+    var stateBounds = `?extended=1&lamin=${this.geoBounds.southernLatitude}&lomin=${this.geoBounds.westernLongitude}&lamax=${this.geoBounds.northernLatitude}&lomax=${this.geoBounds.easternLongitude}`;
     var targetURL = `${URL}/states/all${stateBounds}`;
 
     this.restService.get<IStateVectorRawData>(targetURL, {

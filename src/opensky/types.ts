@@ -3,7 +3,7 @@ export interface IMapGeoBounds {
   easternLongitude: number;
   southernLatitude: number;
   westernLongitude: number;
-}
+};
 
 export interface IStateVector {
   icao24: string; // Unique ICAO 24-bit address of the transponder in hex string representation.
@@ -22,18 +22,19 @@ export interface IStateVector {
   geo_altitude: number | null; // Geometric altitude in meters. Can be null.
   squawk: number | null; // The transponder code aka Squawk. Can be null.
   spi: boolean; // Whether flight status indicates special purpose indicator.
-  position_source: number; // Origin of this state’s position: 0 = ADS-B, 1 = ASTERIX, 2 = MLAT
-}
+  position_source: number; // Origin of this state’s position: 0 = ADS-B, 1 = ASTERIX, 2 = MLAT, 3 = FLARM -> see resolvePositionSource()
+  category: number; // Aircraft category -> see resolveCategory()
+};
 
 export interface IStateVectorData {
   time: number;
   states: Array<IStateVector>;
-}
+};
 
 export interface IStateVectorRawData {
   time: number;
   states: Array<Array<any>>;
-}
+};
 
 export interface IAircraftFlight {
   icao24: string; // Unique ICAO 24-bit address of the transponder in hex string representation. All letters are lower case.
@@ -48,10 +49,103 @@ export interface IAircraftFlight {
   estArrivalAirportVertDistance: number; // Vertical distance of the last received airborne position to the estimated arrival airport in meters
   departureAirportCandidatesCount: number; // Number of other possible departure airports. These are airports in short distance to estDepartureAirport.
   arrivalAirportCandidatesCount: number; // Number of other possible departure airports. These are airports in short distance to estArrivalAirport.
-}
+};
 
 export interface IAircraftTrack {
   icao24: string; // Unique ICAO 24-bit address of the transponder in hex string representation.
   callsign: string | null; // Callsign of the vehicle (8 chars). Can be null if no callsign has been received.
   stateVector?: IStateVector;
-}
+};
+
+export const resolvePositionSource = (positionSource: number): string => {
+
+  var reslovedPositionSource = 'Unknown position source';
+  switch (positionSource) {
+    case 0:
+      reslovedPositionSource = 'ADS-B';
+      break;
+    case 1:
+      reslovedPositionSource = 'ASTERIX';
+      break;
+    case 2:
+      reslovedPositionSource = 'MLAT';
+      break;
+    case 3:
+      reslovedPositionSource = 'FLARM';
+      break;
+  };
+
+  return reslovedPositionSource;
+};
+
+export const resolveCategory = (category: number): string => {
+
+  var reslovedCategory = 'Unknown category';
+  switch (category) {
+    case 0:
+      reslovedCategory = 'No information at all';
+      break;
+    case 1:
+      reslovedCategory = 'No ADS-B Emitter Category Information';
+      break;
+    case 2:
+      reslovedCategory = 'Light (< 15500 lbs)';
+      break;
+    case 3:
+      reslovedCategory = 'Small (15500 to 75000 lbs)';
+      break;
+    case 4:
+      reslovedCategory = 'Large (75000 to 300000 lbs)';
+      break;
+    case 5:
+      reslovedCategory = 'High Vortex Large (aircraft such as B-757)';
+      break;
+    case 6:
+      reslovedCategory = 'Heavy (> 300000 lbs)';
+      break;
+    case 7:
+      reslovedCategory = 'High Performance (> 5g acceleration and 400 kts)';
+      break;
+    case 8:
+      reslovedCategory = 'Rotorcraft';
+      break;
+    case 9:
+      reslovedCategory = 'Glider / sailplane';
+      break;
+    case 10:
+      reslovedCategory = 'Lighter-than-air';
+      break;
+    case 11:
+      reslovedCategory = 'Parachutist / Skydiver';
+      break;
+    case 12:
+      reslovedCategory = 'Ultralight / hang-glider / paraglider';
+      break;
+    case 13:
+      reslovedCategory = 'Reserved';
+      break;
+    case 14:
+      reslovedCategory = 'Unmanned Aerial Vehicle';
+      break;
+    case 15:
+      reslovedCategory = 'Space / Trans-atmospheric vehicle';
+      break;
+    case 16:
+      reslovedCategory = 'Surface Vehicle – Emergency Vehicle';
+      break;
+    case 17:
+      reslovedCategory = 'Surface Vehicle – Service Vehicle';
+      break;
+    case 18:
+      reslovedCategory = 'Point Obstacle (includes tethered balloons)';
+      break;
+    case 19:
+      reslovedCategory = 'Cluster Obstacle';
+      break;
+    case 20:
+      reslovedCategory = 'Line Obstacle';
+      break;
+  };
+
+  return reslovedCategory;
+};

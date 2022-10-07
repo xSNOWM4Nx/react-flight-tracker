@@ -9,7 +9,7 @@ import { SxProps } from '@mui/system';
 import { jsx } from '@emotion/react';
 import CloseIcon from '@mui/icons-material/Close';
 
-import { IAircraftTrack, IStateVector } from '../opensky';
+import { IAircraftTrack, resolvePositionSource, resolveCategory } from '../opensky';
 import { getFormattedValue, getIcon, getRotation, getStatusText } from '../helpers';
 
 interface ILocalProps {
@@ -73,6 +73,9 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
       return undefined;
 
     const stateVector = props.selectedAircraft.stateVector;
+
+    // Get category
+    //const category = stateVector.category !== null ? resolveCategory(stateVector.category) : 'Unknown category';
 
     // Get altitude
     var altitude = stateVector.geo_altitude;
@@ -139,6 +142,10 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
               variant='h6'>
               {stateVector.callsign ? stateVector.callsign : '?'}
             </Typography>
+            {/* <Typography
+              variant='body1'>
+              {stateVector.category}
+            </Typography> */}
             <Typography
               variant='body1'>
               {stateVector.origin_country}
@@ -213,6 +220,9 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
       altitude = stateVector.baro_altitude;
     if ((altitude === null) || (altitude < 0))
       altitude = 0;
+
+    // Get position source
+    //const positionSource = stateVector.position_source ? resolvePositionSource(stateVector.position_source) : 'Unknown position source';
 
     // Get velocity
     const velocity = stateVector.velocity ? stateVector.velocity : -1;
