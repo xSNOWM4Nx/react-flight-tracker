@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import { IService, Service, ServiceStateEnumeration, ServiceKeys, IRESTService, IResponse, createResponse, ResponseStateEnumeration } from '@daniel.neuweiler/ts-lib-module';
 import {
   IStateVectorData, IStateVectorRawData, IStateVector,
@@ -224,7 +225,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     if (this.userName && this.password) {
 
       this.hasCredentials = true;
-      this.restService.setAuthorization(`Basic ${btoa(`${this.userName}:${this.password}`)}`); // Buffer.from(authString).toString('base64')
+      this.restService.setAuthorization(`Basic ${Buffer.from(`${this.userName}:${this.password}`).toString('base64')}`); // Buffer.from(authString).toString('base64') btoa(`${this.userName}:${this.password}`)
 
       this.userName = undefined;
       this.password = undefined;
