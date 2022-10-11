@@ -1,7 +1,7 @@
 /* eslint-disable react/react-in-jsx-scope -- Unaware of jsxImportSource */
 /** @jsxImportSource @emotion/react */
 import React, { useState, useRef, useEffect } from 'react';
-import { Indicator1 } from '@daniel.neuweiler/react-lib-module';
+import { ScrollContainer, Indicator1 } from '@daniel.neuweiler/react-lib-module';
 
 import { Box, Typography, IconButton } from '@mui/material';
 import { useTheme, Theme } from '@mui/material/styles';
@@ -248,7 +248,7 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
 
     return (
 
-      <React.Fragment>
+      <ScrollContainer>
 
         <Box
           sx={textContainerStyle}>
@@ -402,7 +402,7 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
           </Typography>
         </Box>
 
-      </React.Fragment>
+      </ScrollContainer>
     );
   };
 
@@ -436,9 +436,11 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
 
     <Box
       sx={{
+        overflow: 'hidden',
         position: 'relative',
+        height: 'calc(100vh - 160px)',
+        // maxHeight: '256px',
         minWidth: 268,
-        height: 'auto',
         width: 'auto',
         backgroundColor: theme.palette.background.paper,
         borderRadius: 2,
@@ -447,8 +449,19 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
         padding: theme.spacing(1)
       }}>
 
-      {renderHeader()}
-      {renderFlightData()}
+      <Box
+        sx={{
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          alignContent: 'flex-start'
+        }}>
+
+        {renderHeader()}
+        {renderFlightData()}
+      </Box>
     </Box>
   );
 }
