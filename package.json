@@ -1,6 +1,6 @@
 {
   "name": "react-flight-tracker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "dependencies": {
     "@daniel.neuweiler/react-lib-module": "1.0.0",
@@ -43,9 +43,7 @@
   },
   "browserslist": {
     "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+      "defaults, not ie 11"
     ],
     "development": [
       "last 1 chrome version",
