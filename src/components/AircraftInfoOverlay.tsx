@@ -6,7 +6,6 @@ import { ScrollContainer, Indicator1 } from '@daniel.neuweiler/react-lib-module'
 import { Box, Typography, IconButton } from '@mui/material';
 import { useTheme, Theme } from '@mui/material/styles';
 import { SxProps } from '@mui/system';
-import { jsx } from '@emotion/react';
 import CloseIcon from '@mui/icons-material/Close';
 
 import { IAircraftTrack, resolvePositionSource, resolveCategory } from '../opensky';
@@ -438,10 +437,13 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
       sx={{
         overflow: 'hidden',
         position: 'relative',
-        height: 'calc(100vh - 160px)',
-        // maxHeight: '256px',
+        maxHeight: 'calc(100vh - 160px)',
         minWidth: 268,
         width: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        alignContent: 'flex-start',
         backgroundColor: theme.palette.background.paper,
         borderRadius: 2,
         boxShadow: 5,
@@ -449,19 +451,9 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
         padding: theme.spacing(1)
       }}>
 
-      <Box
-        sx={{
-          height: '100%',
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          alignContent: 'flex-start'
-        }}>
+      {renderHeader()}
+      {renderFlightData()}
 
-        {renderHeader()}
-        {renderFlightData()}
-      </Box>
     </Box>
   );
 }
