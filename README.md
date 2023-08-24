@@ -22,7 +22,7 @@ The goal of this project is to read the data from [OpenSky Network](https://open
 - Fetching flight data from [OpenSky Network](https://opensky-network.org/).
 - Using maps from [mapbox](https://www.mapbox.com/) with the React friendly wrapper [react-map-gl](https://github.com/visgl/react-map-gl).
 - Using styling components from [MUI](https://github.com/mui-org) project.
-- Using [Vite](https://vitejs.dev/) to serve the library
+- Using [Vite](https://vitejs.dev/) to serve the app.
 
 ## 🔌 Usage:
 To use the maps from [mapbox](https://www.mapbox.com/), you need an appropriate token. You can create one on their website by registering there. Registration is free and all relevant things are covered for development purposes.
