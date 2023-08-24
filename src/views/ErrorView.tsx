@@ -1,7 +1,7 @@
 import React from 'react';
 import { ViewContainer } from '@daniel.neuweiler/react-lib-module';
 
-import { ViewKeys } from './navigation';
+import { ViewKeys } from './../navigation';
 
 interface ILocalProps {
 }

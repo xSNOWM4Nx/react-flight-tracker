@@ -45,7 +45,7 @@ const App: React.FC = () => {
 
     var services: Array<IService> = [];
 
-    var openSkyAPIService = new OpenSkyAPIService(process.env.REACT_APP_OSKY_USERNAME, process.env.REACT_APP_OSKY_PASSWORD);
+    var openSkyAPIService = new OpenSkyAPIService(import.meta.env.VITE_REACT_OSKY_USERNAME, import.meta.env.VITE_REACT_OSKY_PASSWORD);
     services.push(openSkyAPIService);
 
     var geospatialService = new GeospatialService();

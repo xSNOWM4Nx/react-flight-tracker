@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, Box, Typography, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { INavigationElementProps, ViewInjector } from '@daniel.neuweiler/react-lib-module';
-import { ViewNavigationElements, ViewKeys } from './../views/navigation';
+import { ViewNavigationElements, getImportableView } from './../navigation';
 
 interface ILocalProps {
   isVisible: boolean;
@@ -92,7 +92,7 @@ const ViewInjectorDialog: React.FC<Props> = (props) => {
 
         <ViewInjector
           navigationElement={selectedNavigationElement}
-          onImportView={navigationElement => React.lazy(() => import(`./../${navigationElement.importPath}`))} />
+          onImportView={navigationElement => React.lazy(() => getImportableView(navigationElement.importPath))} />
       </Box>
 
     </Dialog>

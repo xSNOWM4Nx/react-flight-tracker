@@ -1,6 +1,6 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import { Box, useTheme } from '@mui/material';
-import ReactMap, { MapRef, FullscreenControl, NavigationControl, ViewState, ViewStateChangeEvent, MapboxEvent, MapLayerMouseEvent, MapStyleDataEvent } from 'react-map-gl';
+import ReactMap, { MapRef, FullscreenControl, NavigationControl, ViewState, ViewStateChangeEvent, MapEvent, MapLayerMouseEvent, MapStyleDataEvent } from 'react-map-gl';
 import { Feature } from 'geojson';
 import { svgToImageAsync } from '@daniel.neuweiler/ts-lib-module';
 import { SystemContext } from '@daniel.neuweiler/react-lib-module';
@@ -130,7 +130,7 @@ const FlightMap: React.FC<Props> = (props) => {
     });
   };
 
-  const handleLoad = (e: MapboxEvent<undefined>) => {
+  const handleLoad = (e: MapEvent<undefined>) => {
 
     const map = e.target;
     if (map == undefined)
@@ -203,7 +203,7 @@ const FlightMap: React.FC<Props> = (props) => {
         aircraftLayerId
       ]}
       mapStyle={styleTheme.map.style}
-      mapboxAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
+      mapboxAccessToken={import.meta.env.VITE_REACT_MAPBOX_TOKEN}
       onLoad={handleLoad}
       onClick={handleClick}
       onMove={handleMove}

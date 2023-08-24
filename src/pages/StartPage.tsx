@@ -3,7 +3,7 @@ import { INavigationRequest, NavigationTypeEnumeration } from '@daniel.neuweiler
 import { ViewInjector, INavigationElementProps } from '@daniel.neuweiler/react-lib-module';
 
 import ViewInjectorDialog from './../dialogs/ViewInjectorDialog';
-import { ViewNavigationElements, ViewKeys } from './../views/navigation';
+import { ViewNavigationElements, ViewKeys, getImportableView } from './../navigation';
 
 interface ILocalProps {
   navigationRequest?: INavigationRequest;
@@ -59,7 +59,7 @@ const StartPage: React.FC<Props> = (props) => {
 
       <ViewInjector
         navigationElement={selectedViewNavigationElement}
-        onImportView={navigationElement => React.lazy(() => import(`./../${navigationElement.importPath}`))} />
+        onImportView={navigationElement => React.lazy(() => getImportableView(navigationElement.importPath))} />
 
       <ViewInjectorDialog
         isVisible={isViewDialogVisible}

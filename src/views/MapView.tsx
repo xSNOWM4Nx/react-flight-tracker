@@ -2,7 +2,7 @@ import React, { useState, useContext, useRef, useEffect } from 'react';
 import { ViewState } from 'react-map-gl';
 import { SystemContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
 
-import { ViewKeys } from './navigation';
+import { ViewKeys } from './../navigation';
 import { IOpenSkyAPIService } from './../services';
 import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
 import FlightMap from './../components/FlightMap';

@@ -5,7 +5,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { INavigationService, ServiceKeys, INavigationRequest, NavigationTypeEnumeration, INavigationElementBase } from '@daniel.neuweiler/ts-lib-module';
 import { SystemContext, SelectableMenu, ISelectableProps } from '@daniel.neuweiler/react-lib-module';
 
-import { ViewNavigationElements, ViewKeys } from './../views/navigation';
+import { ViewNavigationElements, ViewKeys } from './../navigation';
 import StartPage from './StartPage';
 import ErrorPage from './ErrorPage';
 

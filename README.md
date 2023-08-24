@@ -14,13 +14,15 @@ The goal of this project is to read the data from [OpenSky Network](https://open
 - [react-router](https://github.com/ReactTraining/react-router)
 - [MUI](https://github.com/mui-org)
 - [react-map-gl](https://github.com/visgl/react-map-gl)
+- [Vite](https://vitejs.dev/)
 
 ## 🔮 Features:
 - Using "Hooks", "Context", "Suspense", "React.lazy" and other popular React patterns.
 - Written entirely in TypeScript.
+- Fetching flight data from [OpenSky Network](https://opensky-network.org/).
 - Using maps from [mapbox](https://www.mapbox.com/) with the React friendly wrapper [react-map-gl](https://github.com/visgl/react-map-gl).
 - Using styling components from [MUI](https://github.com/mui-org) project.
-- Fetching flight data from [OpenSky Network](https://opensky-network.org/).
+- Using [Vite](https://vitejs.dev/) to serve the library
 
 ## 🔌 Usage:
 To use the maps from [mapbox](https://www.mapbox.com/), you need an appropriate token. You can create one on their website by registering there. Registration is free and all relevant things are covered for development purposes.
@@ -33,17 +35,14 @@ npm install
 ```
 Create a `.env.local` file in the root directory containing following entries:
 ```
-REACT_APP_MAPBOX_TOKEN=<YOUR_MAPBOX_TOKEN>
-REACT_APP_OSKY_USERNAME=<YOUR_OPENSKYNETWORK_USERNAME>
-REACT_APP_OSKY_PASSWORD=<YOUR_OPENSKYNETWORK_PASSWORD>
+VITE_REACT_MAPBOX_TOKEN=<YOUR_MAPBOX_TOKEN>
+VITE_REACT_OSKY_USERNAME=<YOUR_OPENSKYNETWORK_USERNAME>
+VITE_REACT_OSKY_PASSWORD=<YOUR_OPENSKYNETWORK_PASSWORD>
 ```
 Start the project:
 ```
-npm start
+npm run preview
 ```
 
 ## 📑 License:
 - MIT © [xSNOWM4Nx](https://github.com/xSNOWM4Nx)
-- 
----
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

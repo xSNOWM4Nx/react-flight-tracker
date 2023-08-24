@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Box, Typography, Card, CardContent, FormGroup, FormControl, FormControlLabel, InputLabel, Switch, Select, SelectChangeEvent, MenuItem } from '@mui/material';
 import { SystemContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
 import { AppContext } from './../contexts';
-import { ViewKeys } from './navigation';
+import { ViewKeys } from './../navigation';
 import { ThemeKeys } from './../styles';
 
 export class SettingKeys {

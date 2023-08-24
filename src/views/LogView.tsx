@@ -2,7 +2,7 @@ import React from 'react';
 import { LogProvider } from '@daniel.neuweiler/ts-lib-module';
 import { ViewContainer, LogRenderer } from '@daniel.neuweiler/react-lib-module';
 
-import { ViewKeys } from './navigation';
+import { ViewKeys } from './../navigation';
 
 interface ILocalProps {
 }

@@ -13,7 +13,7 @@ export class ViewKeys {
   public static SettingsView: string = 'SettingsView';
   public static LogView: string = 'LogView';
   public static AboutView: string = 'AboutView';
-}
+};
 
 export const ViewNavigationElements: { [key: string]: NavigationElementProps } = {
   [ViewKeys.ErrorView]: {
@@ -61,4 +61,42 @@ export const ViewNavigationElements: { [key: string]: NavigationElementProps } =
     importPath: "views/AboutView",
     icon: InfoIcon
   }
-}
+};
+
+export const getImportableView = async (dynamicFilePath: string) => {
+
+  let page: any;
+
+  const splitName = dynamicFilePath.split('/');
+
+  switch (splitName.length) {
+
+    case 1:
+      page = await import(`./../${splitName[0]}.tsx`);
+      break;
+    case 2:
+      page = await import(`./../${splitName[0]}/${splitName[1]}.tsx`);
+      break;
+    case 3:
+      page = await import(`./../${splitName[0]}/${splitName[1]}/${splitName[2]}.tsx`);
+      break;
+    case 4:
+      page = await import(`./../${splitName[0]}/${splitName[1]}/${splitName[2]}/${splitName[3]}.tsx`);
+      break;
+  }
+
+  // if (splitName.length === 1) {
+  //   page = await import(`./../${splitName[0]}.tsx`);
+  // }
+  // if (splitName.length === 2) {
+  //   page = await import(`./../${splitName[0]}/${splitName[1]}.tsx`);
+  // }
+  // if (splitName.length === 3) {
+  //   page = await import(`./../${splitName[0]}/${splitName[1]}/${splitName[2]}.tsx`);
+  // }
+  // if (splitName.length === 4) {
+  //   page = await import(`./../${splitName[0]}/${splitName[1]}/${splitName[2]}/${splitName[3]}.tsx`);
+  // }
+
+  return page;
+};
