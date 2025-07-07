@@ -1,8 +1,8 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import svgr from 'vite-plugin-svgr';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import svgr from 'vite-plugin-svgr'
 
-// https://vitejs.dev/config/
+// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
@@ -12,22 +12,15 @@ export default defineConfig({
       },
     }),
   ],
-  resolve: {
-    dedupe: [
-      "@daniel.neuweiler/ts-lib-module",
-      "@emotion/react",
-      "@emotion/styled",
-      "@mui/material",
-      "@mui/icons-material",
-      "react",
-      "react-dom",
-      "react-window"
-    ]
+  server: {
+    proxy: {
+      // All requests to /oskyapi will be proxied to the OpenSky Network API
+      '/oskyapi': {
+        target: 'https://opensky-network.org/api',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/oskyapi/, ''),
+        secure: false,
+      },
+    },
   },
-  build: {
-    outDir: './build',
-    // sourcemap: true,
-    minify: false,
-  },
-  assetsInclude: ['png', 'jpg']
 })

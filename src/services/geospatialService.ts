@@ -1,8 +1,10 @@
-import { IService, Service, IResponse, createResponse, ResponseStateEnumeration } from '@daniel.neuweiler/ts-lib-module';
-import { Feature, GeoJsonProperties, Point } from 'geojson';
 import destination from '@turf/destination';
+import { Service } from './infrastructure/service.js';
 
-import { IStateVectorData, IAircraftTrack, IStateVector } from '../opensky';
+// Types
+import type { IService } from './infrastructure/serviceTypes.js';
+import type { Feature, GeoJsonProperties, Point } from 'geojson';
+import type { IStateVectorData, IAircraftTrack, IStateVector } from '../opensky/types.js';
 
 // Earth radius in meters
 const earthRadius = 6371008.8;
@@ -26,8 +28,8 @@ export class GeospatialService extends Service implements IGeospatialService {
   private pathPredictionUpdatedSubscriberDictionary: IPathPredictionUpdatedSubscriberDictionary = {};
   private pathPredictionUpdatedSubscriptionCounter: number = 0;
 
-  constructor() {
-    super('GeospatialService');
+  constructor(key: string) {
+    super(key);
 
   };
 
@@ -51,8 +53,7 @@ export class GeospatialService extends Service implements IGeospatialService {
 
     // Register callback
     this.pathPredictionUpdatedSubscriberDictionary[registerKey] = callbackHandler;
-    this.logger.debug(`Component with key '${registerKey}' has subscribed on 'PathPredictionUpdated'.`);
-    this.logger.debug(`'${Object.entries(this.pathPredictionUpdatedSubscriberDictionary).length}' subscribers on 'PathPredictionUpdated'.`);
+    console.debug(`Component with key '${registerKey}' has subscribed on 'PathPredictionUpdated'.`);
 
     return registerKey;
   };
@@ -64,29 +65,22 @@ export class GeospatialService extends Service implements IGeospatialService {
     if (existingSubscriber) {
 
       delete this.pathPredictionUpdatedSubscriberDictionary[registerKey];
-      this.logger.debug(`Component with key '${registerKey}' has unsubscribed on 'PathPredictionUpdated'.`);
-      this.logger.debug(`'${Object.entries(this.pathPredictionUpdatedSubscriberDictionary).length}' subscribers on 'PathPredictionUpdated'.`);
-
+      console.debug(`Unsubscribing component with key '${registerKey}' from 'PathPredictionUpdated'.`);
       return true;
     }
     else {
-
-      this.logger.error(`Component with key '${registerKey}' not registered on 'PathPredictionUpdated'.`);
-      this.logger.debug(`'${Object.entries(this.pathPredictionUpdatedSubscriberDictionary).length}' subscribers on 'PathPredictionUpdated'.`);
-
+      console.warn(`Unsubscribing component with key '${registerKey}' from 'PathPredictionUpdated' failed.`);
       return false;
     };
   };
 
-  protected async onStarting(): Promise<IResponse<boolean>> {
-    return createResponse<boolean>(true, ResponseStateEnumeration.OK, []);
+  protected async onStarting(): Promise<boolean> {
+    return true;
   };
 
-  protected async onStopping(): Promise<IResponse<boolean>> {
-
+  protected async onStopping(): Promise<boolean> {
     clearInterval(this.pathPredictionIntervalID);
-
-    return createResponse<boolean>(true, ResponseStateEnumeration.OK, []);
+    return true;
   };
 
   private calculatePath = (stateVectors: IStateVectorData) => {

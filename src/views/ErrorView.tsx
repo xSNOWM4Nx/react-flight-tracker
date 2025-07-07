@@ -1,11 +1,25 @@
 import React from 'react';
-import { ViewContainer } from '@daniel.neuweiler/react-lib-module';
+import { Box } from '@mui/material';
+import { NavigationTypeEnumeration } from '../navigation/navigationTypes';
+import { ViewKeys } from './viewKeys';
 
-import { ViewKeys } from './../navigation';
+// Types
+import type { INavigationElement, INavigationElementProps } from '../navigation/navigationTypes';
+
+// Icons
+import ErrorIcon from '@mui/icons-material/Error';
+
+export const errorViewNavigationData: INavigationElement = {
+  key: ViewKeys.ErrorView,
+  name: 'Error',
+  importPath: 'views/ErrorView',
+  type: NavigationTypeEnumeration.View,
+  Icon: ErrorIcon
+};
 
 interface ILocalProps {
 }
-type Props = ILocalProps;
+type Props = ILocalProps & INavigationElementProps;
 
 const ErrorView: React.FC<Props> = (props) => {
 
@@ -14,10 +28,15 @@ const ErrorView: React.FC<Props> = (props) => {
 
   return (
 
-    <ViewContainer
-      isScrollLocked={true}>
+    <Box
+      sx={{
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
 
-    </ViewContainer>
+    </Box>
   );
 }
 

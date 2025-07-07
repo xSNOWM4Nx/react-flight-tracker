@@ -1,9 +1,24 @@
 import React, { useContext } from 'react';
-import { Box, Typography, Card, CardContent, FormGroup, FormControl, FormControlLabel, InputLabel, Switch, Select, SelectChangeEvent, MenuItem } from '@mui/material';
-import { SystemContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
-import { AppContext } from './../contexts';
-import { ViewKeys } from './../navigation';
+import { Box, Typography, Card, CardContent, FormGroup, FormControl, FormControlLabel, InputLabel, Switch, Select, MenuItem } from '@mui/material';
+import { AppContext } from '../components/infrastructure/AppContextProvider.js';
+import { NavigationTypeEnumeration } from '../navigation/navigationTypes.js';
+import { ViewKeys } from './viewKeys.js';
 import { ThemeKeys } from './../styles';
+
+// Types
+import type { SelectChangeEvent } from '@mui/material';
+import type { INavigationElement, INavigationElementProps } from '../navigation/navigationTypes';
+
+// Icons
+import SettingsIcon from '@mui/icons-material/Settings';
+
+export const settingsViewNavigationData: INavigationElement = {
+  key: ViewKeys.SettingsView,
+  name: 'Settings',
+  importPath: 'views/SettingsView',
+  type: NavigationTypeEnumeration.Dialog,
+  Icon: SettingsIcon
+};
 
 export class SettingKeys {
   public static ShowDataOverlayOnMap = 'ShowDataOverlayOnMap';
@@ -12,7 +27,7 @@ export class SettingKeys {
 
 interface ILocalProps {
 }
-type Props = ILocalProps;
+type Props = ILocalProps & INavigationElementProps;
 
 const SettingsView: React.FC<Props> = (props) => {
 
@@ -20,24 +35,23 @@ const SettingsView: React.FC<Props> = (props) => {
   const contextName: string = ViewKeys.SettingsView;
 
   // Contexts
-  const systemContext = useContext(SystemContext);
   const appContext = useContext(AppContext);
 
-  const getSetting = (key: string, type: string) => {
+  const pullSetting = (key: string, type: string) => {
 
-    const value = systemContext.getSetting(key)
+    const value = appContext.pullSetting(key);
     if (typeof (value) === type)
       return value;
 
     return false;
   };
 
-  const handleChange = (e: SelectChangeEvent) => {
+  const handleThemeChange = (e: SelectChangeEvent) => {
     appContext.changeTheme(e.target.value);
   };
 
   const handleSettingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    systemContext.storeSetting(e.target.name, e.target.checked);
+    appContext.pushSetting(e.target.name, e.target.checked);
   };
 
   const renderAppSettings = () => {
@@ -67,7 +81,7 @@ const SettingsView: React.FC<Props> = (props) => {
                 labelId="demo-simple-select-filled-label"
                 id="demo-simple-select-filled"
                 value={appContext.activeThemeName}
-                onChange={handleChange}>
+                onChange={handleThemeChange}>
 
                 <MenuItem
                   value={ThemeKeys.DarkTheme}>
@@ -109,7 +123,7 @@ const SettingsView: React.FC<Props> = (props) => {
                 <Switch
                   color='secondary'
                   name={SettingKeys.ShowDataOverlayOnMap}
-                  checked={getSetting(SettingKeys.ShowDataOverlayOnMap, 'boolean')}
+                  checked={pullSetting(SettingKeys.ShowDataOverlayOnMap, 'boolean')}
                   onChange={handleSettingsChange} />
               }
               label="Show data overlay on map"
@@ -119,7 +133,7 @@ const SettingsView: React.FC<Props> = (props) => {
                 <Switch
                   color='secondary'
                   name={SettingKeys.ShowLogOverlayOnMap}
-                  checked={getSetting(SettingKeys.ShowLogOverlayOnMap, 'boolean')}
+                  checked={pullSetting(SettingKeys.ShowLogOverlayOnMap, 'boolean')}
                   onChange={handleSettingsChange} />
               }
               label="Show log overlay on map"
@@ -132,15 +146,20 @@ const SettingsView: React.FC<Props> = (props) => {
 
   return (
 
-    <ViewContainer
-      isScrollLocked={true}>
+    <Box
+      sx={{
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
 
       {renderAppSettings()}
 
       <Box sx={{ height: (theme) => theme.spacing(1) }} />
 
       {renderMapSettings()}
-    </ViewContainer>
+    </Box>
   );
 }
 

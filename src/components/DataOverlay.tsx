@@ -1,6 +1,8 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { IStateVectorData } from '../opensky';
+
+// Types
+import type { IStateVectorData } from '../opensky/types.js';
 
 interface ILocalProps {
   stateVectors: IStateVectorData;

@@ -1,11 +1,27 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
-import { ViewState } from 'react-map-gl';
-import { SystemContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
-
-import { ViewKeys } from './../navigation';
-import { IOpenSkyAPIService } from './../services';
-import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
+import { Box } from '@mui/material';
+import { AppContext } from '../components/infrastructure/AppContextProvider.js';
+import { ServiceKeys } from './../services/serviceKeys.js';
+import { NavigationTypeEnumeration } from '../navigation/navigationTypes';
+import { ViewKeys } from './viewKeys';
 import FlightMap from './../components/FlightMap';
+
+// Icons
+import FlightIcon from '@mui/icons-material/Flight';
+
+// Types
+import type { ViewState } from 'react-map-gl/mapbox';
+import type { INavigationElement } from '../navigation/navigationTypes.js';
+import type { IOpenSkyAPIService } from './../services/openSkyAPIService.js';
+import type { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky/types.js';
+
+export const mapViewNavigationData: INavigationElement = {
+  key: ViewKeys.MapView,
+  name: 'Map',
+  importPath: 'views/MapView',
+  type: NavigationTypeEnumeration.View,
+  Icon: FlightIcon
+};
 
 interface ILocalProps {
 }
@@ -21,8 +37,8 @@ const MapView: React.FC<Props> = (props) => {
   const [trackedAircraft, setTrackedAircraft] = useState<IAircraftTrack | undefined>(undefined);
 
   // Contexts
-  const systemContext = useContext(SystemContext)
-  const openSkyAPIService = systemContext.getService<IOpenSkyAPIService>('OpenSkyAPIService');
+  const appContext = useContext(AppContext)
+  const openSkyAPIService = appContext.getService<IOpenSkyAPIService>(ServiceKeys.OpenSkyAPIService);
 
   // Refs
   const stateVectorsSubscriptionRef = useRef<string>('');
@@ -91,8 +107,13 @@ const MapView: React.FC<Props> = (props) => {
 
   return (
 
-    <ViewContainer
-      isScrollLocked={true}>
+    <Box
+      sx={{
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
 
       <FlightMap
         stateVectors={stateVectors}
@@ -100,7 +121,7 @@ const MapView: React.FC<Props> = (props) => {
         onMapChange={handleMapChange}
         onTrackAircraft={handleTrackAircraft}
         onReleaseTrack={handleReleaseTrack} />
-    </ViewContainer>
+    </Box>
   );
 }
 

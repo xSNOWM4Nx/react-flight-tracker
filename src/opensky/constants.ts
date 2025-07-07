@@ -1,4 +1,4 @@
-export const URL = 'https://opensky-network.org/api';
+export const URL = '/oskyapi'//'https://opensky-network.org/api';
 export const routesEndpoint = 'api/routes?callsign={callsign}';
 export const aircraftEndpoint = 'api/metadata/aircraft/icao/{icao24}';
 export const airportsEndpoint = 'api/airports/?icao={ICAO}';

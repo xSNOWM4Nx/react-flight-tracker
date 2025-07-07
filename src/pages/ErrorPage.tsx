@@ -1,6 +1,6 @@
 import React from 'react';
-import { ErrorContent } from '@daniel.neuweiler/react-lib-module';
 import { Box } from '@mui/material';
+import { ErrorContent } from '../components/infrastructure/ErrorContent';
 
 interface ILocalProps {
   sourceName?: string;

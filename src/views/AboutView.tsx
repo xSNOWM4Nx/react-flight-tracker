@@ -1,22 +1,39 @@
 import React from 'react';
-import { ViewContainer, AboutContent, IAboutData } from '@daniel.neuweiler/react-lib-module';
+import { Box } from '@mui/material';
+import AboutContent from '../components/infrastructure/AboutContent';
+import { NavigationTypeEnumeration } from '../navigation/navigationTypes';
+import { ViewKeys } from './viewKeys';
 
+// Types
+import type { IAboutData } from '../components/infrastructure/AboutContent';
+import type { INavigationElement, INavigationElementProps } from '../navigation/navigationTypes';
+
+// Icons
+import InfoIcon from '@mui/icons-material/Info';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import { ReactComponent as NpmIcon } from './../resources/icons/npmicon.svg';
+import NpmIcon from './../resources/icons/npmicon.svg?react';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import FacebookIcon from '@mui/icons-material/Facebook';
-import { ReactComponent as ArtstationIcon } from './../resources/icons/artstationicon.svg';
+import ArtstationIcon from './../resources/icons/artstationicon.svg?react';
 import InstagramIcon from '@mui/icons-material/Instagram';
+
+export const aboutViewNavigationData: INavigationElement = {
+  key: ViewKeys.AboutView,
+  name: 'About',
+  importPath: 'views/AboutView',
+  type: NavigationTypeEnumeration.Dialog,
+  Icon: InfoIcon
+};
 
 interface ILocalProps {
 }
-type Props = ILocalProps;
+type Props = ILocalProps & INavigationElementProps;
 
 const AboutView: React.FC<Props> = (props) => {
 
   // Fields
-  const contextName: string = 'AboutView'
+  const contextName: string = ViewKeys.AboutView;
 
   // Data seeding
   const elements: Array<IAboutData> = [
@@ -59,12 +76,17 @@ const AboutView: React.FC<Props> = (props) => {
 
   return (
 
-    <ViewContainer
-      isScrollLocked={true}>
+    <Box
+      sx={{
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
 
       <AboutContent
         elements={elements} />
-    </ViewContainer>
+    </Box>
   );
 }
 

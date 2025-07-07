@@ -1,15 +1,15 @@
 /* eslint-disable react/react-in-jsx-scope -- Unaware of jsxImportSource */
 /** @jsxImportSource @emotion/react */
 import React, { useState, useRef, useEffect } from 'react';
-import { ScrollContainer, Indicator1 } from '@daniel.neuweiler/react-lib-module';
+import { Box, Typography, IconButton, CircularProgress, useTheme } from '@mui/material';
+import { getFormattedValue, getIcon, getRotation, getStatusText } from '../helpers/aircraftDataFunctions.js';
 
-import { Box, Typography, IconButton } from '@mui/material';
-import { useTheme, Theme } from '@mui/material/styles';
-import { SxProps } from '@mui/system';
+// Types
+import type { IAircraftTrack, resolvePositionSource, resolveCategory } from '../opensky/types.js';
+import type { SxProps, Theme } from '@mui/material';
+
+// Icons
 import CloseIcon from '@mui/icons-material/Close';
-
-import { IAircraftTrack, resolvePositionSource, resolveCategory } from '../opensky';
-import { getFormattedValue, getIcon, getRotation, getStatusText } from '../helpers';
 
 interface ILocalProps {
   selectedAircraft?: IAircraftTrack;
@@ -119,7 +119,7 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
             }}>
 
             <FlightIcon
-              css={(theme) => ({
+              css={(theme: Theme) => ({
                 fill: theme.palette.primary.contrastText,
                 width: 32,
                 height: 32,
@@ -247,7 +247,12 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
 
     return (
 
-      <ScrollContainer>
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          overflow: 'auto'
+        }}>
 
         <Box
           sx={textContainerStyle}>
@@ -401,7 +406,7 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
           </Typography>
         </Box>
 
-      </ScrollContainer>
+      </Box>
     );
   };
 
@@ -426,8 +431,9 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
           justifyItems: 'center'
         }}>
 
-        <Indicator1
-          color={theme.palette.primary.main} />
+        <CircularProgress
+          color='primary'
+          size={32} />
       </Box>
     );
 

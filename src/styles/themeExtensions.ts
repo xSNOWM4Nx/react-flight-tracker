@@ -1,4 +1,4 @@
-import { Theme as MUITheme } from '@mui/material/styles';
+import type { Theme as MUITheme } from '@mui/material';
 
 // Module augmentation MUI
 declare module '@mui/material/styles' {

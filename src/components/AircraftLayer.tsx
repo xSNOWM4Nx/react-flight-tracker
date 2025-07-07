@@ -1,13 +1,15 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
-import { Source, Layer } from 'react-map-gl';
-import { FeatureCollection, Geometry, Feature, GeoJsonProperties, Point, Position } from 'geojson';
-import { SymbolLayout, SymbolPaint, Expression, StyleFunction } from 'mapbox-gl';
-import { SystemContext } from '@daniel.neuweiler/react-lib-module';
-import { useTheme } from '@mui/material/styles';
+import { Source, Layer } from 'react-map-gl/mapbox';
+import { useTheme } from '@mui/material';
+import { AppContext } from '../components/infrastructure/AppContextProvider.js';
+import { ServiceKeys } from './../services/serviceKeys.js';
+import { getFormattedValue, getIconName, getRotation, getColor } from '../helpers/aircraftDataFunctions.js';
 
-import { IGeospatialService } from './../services';
-import { IStateVectorData, IAircraftTrack } from '../opensky';
-import { getFormattedValue, getIconName, getRotation, getColor } from '../helpers';
+// Types
+import type { SymbolLayerSpecification, ExpressionSpecification, StyleSpecification } from 'mapbox-gl';
+import type { FeatureCollection, Geometry, Feature, GeoJsonProperties, Point, Position } from 'geojson';
+import type { IGeospatialService } from './../services/geospatialService.js';
+import type { IStateVectorData, IAircraftTrack } from '../opensky/types.js';
 
 interface ILocalProps {
   stateVectors: IStateVectorData;
@@ -31,8 +33,8 @@ const AircraftLayer: React.FC<Props> = (props) => {
   const [pathPredictions, setPathPredictions] = useState<Array<Feature<Point, GeoJsonProperties>>>([]);
 
   // Contexts
-  const systemContext = useContext(SystemContext)
-  const geospatialService = systemContext.getService<IGeospatialService>('GeospatialService');
+  const sppContext = useContext(AppContext)
+  const geospatialService = sppContext.getService<IGeospatialService>(ServiceKeys.GeospatialService);
 
   // Refs
   const pathPredictionSubscriptionRef = useRef<string>('');
@@ -191,17 +193,18 @@ const AircraftLayer: React.FC<Props> = (props) => {
 
   };
 
-  const getText = (): string | Expression | StyleFunction => {
+  const getText = (): string | ExpressionSpecification => {
 
-    var text: string | Expression | StyleFunction = '';
-    const simpleText = ["get", "callsign"] as Expression
-    const detailedText = ['format',
+    let text: string | ExpressionSpecification = '';
+    const simpleText: ExpressionSpecification = ["get", "callsign"];
+    const detailedText: ExpressionSpecification = [
+      'format',
       ["get", "callsign"], { "font-scale": 1.0 },
       "\n", {},
       ["get", "altitude"], { "font-scale": 0.75, "text-color": styleTheme.palette.text.primary },
       "\n", {},
       ["get", "velocity"], { "font-scale": 0.75, "text-color": styleTheme.palette.text.primary }
-    ] as StyleFunction;
+    ];
 
     if (props.zoom && props.zoom > 7)
       text = simpleText;
@@ -223,7 +226,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
     if (props.zoom && props.zoom > 9)
       isconSize = 1.6;
 
-    const symbolLayout: SymbolLayout = {
+    const symbolLayout: SymbolLayerSpecification['layout'] = {
       "icon-image": ["get", "iconName"],
       "icon-allow-overlap": true,
       "icon-rotate": ["get", "rotation"],
@@ -240,7 +243,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
 
   const getSymbolPaint = () => {
 
-    var symbolPaint: SymbolPaint = {
+    var symbolPaint: SymbolLayerSpecification['paint'] = {
       "icon-color": ["get", "color"],
       "text-color": ["get", "color"],
       "text-halo-width": 2,
