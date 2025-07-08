@@ -13,6 +13,7 @@ export type PathPredictionUpdatedCallbackMethod = (destinations: Array<Feature<P
 interface IPathPredictionUpdatedSubscriberDictionary { [key: string]: PathPredictionUpdatedCallbackMethod };
 
 export interface IGeospatialService extends IService {
+  currentPredictionTime: number;
   restartPathPrediction: (stateVectors: IStateVectorData) => void;
   stopPathPrediction: () => void;
   onPathPredictionUpdated: (contextKey: string, callbackHandler: PathPredictionUpdatedCallbackMethod) => string;
@@ -21,12 +22,17 @@ export interface IGeospatialService extends IService {
 
 export class GeospatialService extends Service implements IGeospatialService {
 
+  // IGeospatialService
+  public currentPredictionTime: number = 0;
+
   // Props
-  private pathPredictionInterval: number = 100;
-  private pathPredictionCounter: number = 0;
+  private pathPredictionInterval: number = 200;
   private pathPredictionIntervalID: number = 0;
   private pathPredictionUpdatedSubscriberDictionary: IPathPredictionUpdatedSubscriberDictionary = {};
   private pathPredictionUpdatedSubscriptionCounter: number = 0;
+  private pathPredictionCounter: number = 0;
+  private predictionCounters: Map<string, number> = new Map();
+  private lastPredictedData: Map<string, { lat: number, lon: number, time: number, predicted: [number, number] }> = new Map();
 
   constructor(key: string) {
     super(key);
@@ -36,13 +42,19 @@ export class GeospatialService extends Service implements IGeospatialService {
   public restartPathPrediction = (stateVectors: IStateVectorData) => {
 
     clearInterval(this.pathPredictionIntervalID);
-    this.pathPredictionCounter = 0;
+    //this.pathPredictionCounter = 0;
+    this.predictionCounters.clear();
+    // this.lastPredictedData.clear();
+
+    this.currentPredictionTime = stateVectors.time;
     this.pathPredictionIntervalID = window.setInterval(this.calculatePath, this.pathPredictionInterval, stateVectors);
   };
 
   public stopPathPrediction = () => {
 
     clearInterval(this.pathPredictionIntervalID);
+    this.predictionCounters.clear();
+    this.lastPredictedData.clear();
   };
 
   public onPathPredictionUpdated = (contextKey: string, callbackHandler: PathPredictionUpdatedCallbackMethod) => {
@@ -61,7 +73,7 @@ export class GeospatialService extends Service implements IGeospatialService {
   public offPathPredictionUpdated = (registerKey: string) => {
 
     // Delete callback
-    var existingSubscriber = Object.entries(this.pathPredictionUpdatedSubscriberDictionary).find(([key, value]) => key === registerKey);
+    const existingSubscriber = Object.entries(this.pathPredictionUpdatedSubscriberDictionary).find(([key, value]) => key === registerKey);
     if (existingSubscriber) {
 
       delete this.pathPredictionUpdatedSubscriberDictionary[registerKey];
@@ -80,6 +92,8 @@ export class GeospatialService extends Service implements IGeospatialService {
 
   protected async onStopping(): Promise<boolean> {
     clearInterval(this.pathPredictionIntervalID);
+    this.predictionCounters.clear();
+    this.lastPredictedData.clear();
     return true;
   };
 
@@ -89,8 +103,35 @@ export class GeospatialService extends Service implements IGeospatialService {
 
     for (var stateVector of stateVectors.states) {
 
+      const key = stateVector.icao24;
+      const last = this.lastPredictedData.get(key);
+
+      let origin: [number, number];
+      let counter = 0;
+
+      if (
+        last &&
+        last.lat === stateVector.latitude &&
+        last.lon === stateVector.longitude &&
+        last.time === stateVector.time_position &&
+        last.predicted
+      ) {
+
+        origin = last.predicted;
+        counter = (this.predictionCounters.get(key) ?? 0) + this.pathPredictionInterval;
+      } else {
+
+        origin = [
+          stateVector.longitude ?? 0,
+          stateVector.latitude ?? 0
+        ];
+        counter = 0;
+      }
+
+      this.predictionCounters.set(key, counter);
+
       // Setup last position time in ms
-      var lastPositionTime = this.pathPredictionCounter
+      //var lastPositionTime = this.pathPredictionCounter
 
       // Setup altitude in m
       var altitude = stateVector.geo_altitude;
@@ -104,14 +145,14 @@ export class GeospatialService extends Service implements IGeospatialService {
       if (verticalRate < 0)
         verticalRate *= -1;
 
-      const origin: Array<number> = [stateVector.longitude ? stateVector.longitude : 0, stateVector.latitude ? stateVector.latitude : 0]
+      //const origin: Array<number> = [stateVector.longitude ? stateVector.longitude : 0, stateVector.latitude ? stateVector.latitude : 0]
       const velocity = stateVector.velocity ? stateVector.velocity : 0;
 
-      var distance = (velocity * lastPositionTime) / 1000;
+      var distance = (velocity * counter) / 1000;
 
       // Try to adjust the distance to the vertical rate
       if (verticalRate !== 0)
-        distance = distance - (verticalRate * (lastPositionTime / 1000));
+        distance = distance - (verticalRate * (counter / 1000));
 
       // Try to adjust the distance to the altitude
       if (altitude > 0)
@@ -134,6 +175,16 @@ export class GeospatialService extends Service implements IGeospatialService {
         ['icao24']: stateVector.icao24
       };
       feature.properties = properties;
+
+      this.lastPredictedData.set(key, {
+        lat: stateVector.latitude ?? 0,
+        lon: stateVector.longitude ?? 0,
+        time: stateVector.time_position ?? 0,
+        predicted: [
+          stateVector.longitude ?? 0,
+          stateVector.latitude ?? 0
+        ]
+      });
 
       // Push the feature to the collection
       features.push(feature);

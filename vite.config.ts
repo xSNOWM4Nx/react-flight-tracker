@@ -14,13 +14,17 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      // All requests to /oskyapi will be proxied to the OpenSky Network API
       '/oskyapi': {
         target: 'https://opensky-network.org/api',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/oskyapi/, ''),
         secure: false,
       },
+      '/oskytokenapi': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false
+      }
     },
   },
 })

@@ -31,6 +31,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
   // States
   const [featureCollection, setFeatureCollection] = useState<FeatureCollection | undefined>(undefined);
   const [pathPredictions, setPathPredictions] = useState<Array<Feature<Point, GeoJsonProperties>>>([]);
+  const [predictionTime, setPredictionTime] = useState<number | undefined>(undefined);
 
   // Contexts
   const sppContext = useContext(AppContext)
@@ -38,6 +39,8 @@ const AircraftLayer: React.FC<Props> = (props) => {
 
   // Refs
   const pathPredictionSubscriptionRef = useRef<string>('');
+  const predictionTimeRef = useRef<number | undefined>(undefined);
+  predictionTimeRef.current = predictionTime;
 
   // Effects
   useEffect(() => {
@@ -65,38 +68,40 @@ const AircraftLayer: React.FC<Props> = (props) => {
   }, []);
   useEffect(() => {
 
-    createFeatureCollection(pathPredictions).then((featureCollection) => {
+    createFeatureCollection(props.stateVectors, pathPredictions)
+      .then((featureCollection) => {
+        setFeatureCollection(featureCollection);
+      })
 
-      setFeatureCollection(featureCollection);
-
-      if (!geospatialService)
-        return;
-
-      if (props.stateVectors.states.length > 1000) {
-        geospatialService.stopPathPrediction();
-      }
-      else {
-        geospatialService.restartPathPrediction(props.stateVectors);
-      }
-    })
-
-
-
-  }, [props.stateVectors]);
+  }, [props.stateVectors.time, pathPredictions]);
   useEffect(() => {
 
-    createFeatureCollection(pathPredictions).then((featureCollection) => {
+    if (props.stateVectors.time !== predictionTime || predictionTime === undefined)
+      setPredictionTime(props.stateVectors.time);
 
-      setFeatureCollection(featureCollection);
-    })
+    if (!geospatialService)
+      return;
 
-  }, [pathPredictions]);
+    if (props.stateVectors.states.length > 500) {
+      geospatialService.stopPathPrediction();
+      return;
+    }
+
+    //geospatialService.restartPathPrediction(props.stateVectors);
+
+  }, [props.stateVectors.time]);
 
   const handlePathPredictionUpdated = (destinations: Array<Feature<Point, GeoJsonProperties>>) => {
-    setPathPredictions(destinations);
+
+    if (!geospatialService)
+      return;
+
+    if (geospatialService.currentPredictionTime === predictionTimeRef.current)
+      setPathPredictions(destinations);
+
   };
 
-  const createFeatureCollection = (pathPredictions: Array<Feature<Point, GeoJsonProperties>>) => {
+  const createFeatureCollection = (stateVectors: IStateVectorData, pathPredictions: Array<Feature<Point, GeoJsonProperties>>) => {
 
     return new Promise<FeatureCollection>((res, rej) => {
 
@@ -105,7 +110,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
         features: []
       };
 
-      for (var stateVector of props.stateVectors.states) {
+      for (var stateVector of stateVectors.states) {
 
         if (!stateVector.latitude) {
           continue;
@@ -116,7 +121,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
         }
 
         // Get the index
-        const index = props.stateVectors.states.indexOf(stateVector);
+        const index = stateVectors.states.indexOf(stateVector);
 
         // Check for selection
         var isSelected = false;

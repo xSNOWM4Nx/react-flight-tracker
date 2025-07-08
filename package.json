@@ -4,7 +4,8 @@
   "version": "1.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "start:proxy": "ts-node src/opensky/opensky-token-proxy.ts",
+    "dev": "concurrently \"npm run start:proxy\" \"vite\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -15,7 +16,9 @@
     "@mui/icons-material": "^7.2.0",
     "@mui/material": "^7.2.0",
     "@turf/destination": "^7.2.0",
-    "buffer": "^6.0.3",
+    "express": "^5.1.0",
+    "node-fetch": "^3.3.2",
+    "dotenv": "^17.1.0",
     "mapbox-gl": "^3.13.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -25,6 +28,8 @@
   },
   "devDependencies": {
     "@types/node": "^24.0.10",
+    "@types/node-fetch": "^2.6.12",
+    "@types/express": "^5.0.3",
     "@eslint/js": "^9.29.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
@@ -34,6 +39,8 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
     "typescript": "~5.8.3",
+    "concurrently": "^9.2.0",
+    "ts-node": "^10.9.2",
     "typescript-eslint": "^8.34.1",
     "vite": "^7.0.0",
     "vite-plugin-svgr": "^4.3.0"

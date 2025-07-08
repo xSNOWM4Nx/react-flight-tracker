@@ -20,7 +20,7 @@ export interface IStateVector {
   vertical_rate: number | null; // Vertical rate in m/s. A positive value indicates that the airplane is climbing, a negative value indicates that it descends. Can be null.
   sensors: Array<number> | null; // IDs of the receivers which contributed to this state vector.Is null if no filtering for sensor was used in the request.
   geo_altitude: number | null; // Geometric altitude in meters. Can be null.
-  squawk: number | null; // The transponder code aka Squawk. Can be null.
+  squawk: string | null; // The transponder code aka Squawk. Can be null.
   spi: boolean; // Whether flight status indicates special purpose indicator.
   position_source: number; // Origin of this state’s position: 0 = ADS-B, 1 = ASTERIX, 2 = MLAT, 3 = FLARM -> see resolvePositionSource()
   category: number; // Aircraft category -> see resolveCategory()

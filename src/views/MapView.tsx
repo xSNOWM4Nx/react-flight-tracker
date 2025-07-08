@@ -11,7 +11,7 @@ import FlightIcon from '@mui/icons-material/Flight';
 
 // Types
 import type { ViewState } from 'react-map-gl/mapbox';
-import type { INavigationElement } from '../navigation/navigationTypes.js';
+import type { INavigationElement, INavigationElementProps } from '../navigation/navigationTypes.js';
 import type { IOpenSkyAPIService } from './../services/openSkyAPIService.js';
 import type { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky/types.js';
 
@@ -25,7 +25,7 @@ export const mapViewNavigationData: INavigationElement = {
 
 interface ILocalProps {
 }
-type Props = ILocalProps;
+type Props = ILocalProps & INavigationElementProps;
 
 const MapView: React.FC<Props> = (props) => {
 
@@ -75,7 +75,31 @@ const MapView: React.FC<Props> = (props) => {
 
   const handleStateVectorsUpdated = (data: IStateVectorData) => {
 
-    setStateVectors(data);
+    setStateVectors(prev => {
+
+      const prevMap = new Map(prev.states.map(sv => [sv.icao24, sv]));
+
+      const filteredStates = data.states.filter(sv => {
+
+        const prevSv = prevMap.get(sv.icao24);
+        if (!prevSv)
+          return true;
+
+        if (sv.time_position == null)
+          return false;
+        if (prevSv.time_position == null)
+          return true;
+
+        return sv.time_position > prevSv.time_position;
+      })
+
+      const mergedStates = [
+        ...prev.states.filter(sv => !filteredStates.some(ns => ns.icao24 === sv.icao24)),
+        ...filteredStates
+      ];
+
+      return { ...data, states: mergedStates };
+    });
   };
 
   const handleAircraftTrackUpdated = (data: IAircraftTrack) => {

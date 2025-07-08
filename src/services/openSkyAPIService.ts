@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer';
 import { Service } from './infrastructure/service.js';
 import { URL, Constants } from './../opensky/constants.js';
 import { ServiceStateEnumeration } from './infrastructure/serviceTypes.js';
@@ -189,8 +188,10 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     };
 
     this.getRequestInit = this.restService.getDefaultRequestInit('GET');
-    const hasOAuth2 = !!this.clientId && !!this.clientSecret;
-    if (hasOAuth2) {
+    this.hasCredentials = !!this.clientId && !!this.clientSecret;
+    console.info(`Service ${this.key} has credentials: ${this.hasCredentials}`);
+
+    if (this.hasCredentials) {
 
       this.getRequestInit.mode = 'cors';
       this.getRequestInit.credentials = 'omit';
@@ -267,30 +268,17 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
 
   private async fetchToken(): Promise<void> {
 
-    const params = new URLSearchParams();
+    const response = await fetch(`/oskytokenapi?nocache=${Date.now()}`, { method: "GET" });
 
-    if (!this.clientId || !this.clientSecret) {
-      throw new Error("Client ID and Client Secret are required for OAuth2 authentication.");
-    }
-
-    params.append("grant_type", "client_credentials");
-    params.append("client_id", this.clientId);
-    params.append("client_secret", this.clientSecret);
-
-    const response = await fetch("https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: params
-    });
-
-    if (!response.ok) throw new Error("OAuth2 token request failed: " + response.statusText);
+    if (!response.ok)
+      throw new Error("Proxy OAuth2 token request failed: " + response.statusText);
 
     const data = await response.json();
-    this.accessToken = data.access_token;
 
-    // Token expires in data.expires_in seconds
+    if (!data.access_token || !data.expires_in)
+      throw new Error("Token response is missing access_token or expires_in.");
+
+    this.accessToken = data.access_token;
     this.expiresAt = Date.now() + (data.expires_in - 60) * 1000; // 1 minute before expiration
   };
 

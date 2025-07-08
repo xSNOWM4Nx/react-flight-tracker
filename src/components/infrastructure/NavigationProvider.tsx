@@ -3,7 +3,7 @@ import { NavigationTypeEnumeration } from '../../navigation/navigationTypes';
 import NavigationElementDialog from './NavigationElementDialog';
 
 // Types
-import type { INavigationElement } from '../../navigation/navigationTypes';
+import type { INavigationElement, INavigationElementProps } from '../../navigation/navigationTypes';
 
 export interface NavigationContextType {
   currentViewElement?: INavigationElement;
@@ -15,6 +15,7 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 
 export interface NavigationProviderProps {
   navigationItems: Array<INavigationElement>;
+  onInject: (navigationElement: INavigationElement) => React.LazyExoticComponent<React.ComponentType<INavigationElementProps>>;
   children?: React.ReactNode;
 };
 interface ILocalProps {
@@ -56,9 +57,7 @@ const NavigationProvider: React.FC<Props> = (props) => {
       <NavigationElementDialog
         isVisible={currentDialogElement !== undefined}
         navigationElement={currentDialogElement}
-        onInject={(navigationElement) => {
-          return React.lazy(() => import(navigationElement.importPath));
-        }}
+        onInject={props.onInject}
         onClose={() => setCurrentDialogElement(undefined)} />
 
     </React.Fragment>

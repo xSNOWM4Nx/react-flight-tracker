@@ -3,7 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Box, ThemeProvider, CssBaseline, CircularProgress } from '@mui/material';
 import AppContextProvider from '../components/infrastructure/AppContextProvider.js';
 import NavigationProvider from '../components/infrastructure/NavigationProvider';
-import { navigationElements } from '../navigation/navigationElements';
+import { navigationElements, getImportableView } from '../navigation/navigationElements';
 import RouterPage from './RouterPage.js';
 import { RESTService } from './../services/restService.js';
 import { GeospatialService } from './../services/geospatialService.js';
@@ -104,7 +104,8 @@ const App: React.FC = () => {
             onThemeChange={handleThemeChange}>
 
             <NavigationProvider
-              navigationItems={navigationElements}>
+              navigationItems={navigationElements}
+              onInject={navigationElement => React.lazy(() => getImportableView(navigationElement.importPath))}>
 
               <CssBaseline
                 enableColorScheme={true} />
