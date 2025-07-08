@@ -7,7 +7,7 @@ import { getFormattedValue, getIconName, getRotation, getColor } from '../helper
 
 // Types
 import type { SymbolLayerSpecification, ExpressionSpecification, StyleSpecification } from 'mapbox-gl';
-import type { FeatureCollection, Geometry, Feature, GeoJsonProperties, Point, Position } from 'geojson';
+import type { FeatureCollection, Feature, GeoJsonProperties, Point, Position } from 'geojson';
 import type { IGeospatialService } from './../services/geospatialService.js';
 import type { IStateVectorData, IAircraftTrack } from '../opensky/types.js';
 
@@ -87,7 +87,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
       return;
     }
 
-    //geospatialService.restartPathPrediction(props.stateVectors);
+    geospatialService.restartPathPrediction(props.stateVectors);
 
   }, [props.stateVectors.time]);
 
@@ -96,7 +96,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
     if (!geospatialService)
       return;
 
-    if (geospatialService.currentPredictionTime === predictionTimeRef.current)
+    if (geospatialService.currentPredictionVectorTime === predictionTimeRef.current)
       setPathPredictions(destinations);
 
   };

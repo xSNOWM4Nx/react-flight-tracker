@@ -11,12 +11,9 @@ import type { INavigationElement, INavigationElementProps } from '../navigation/
 // Icons
 import InfoIcon from '@mui/icons-material/Info';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import NpmIcon from './../resources/icons/npmicon.svg?react';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import TwitterIcon from '@mui/icons-material/Twitter';
+import XIcon from '@mui/icons-material/X';
 import FacebookIcon from '@mui/icons-material/Facebook';
-import ArtstationIcon from './../resources/icons/artstationicon.svg?react';
-import InstagramIcon from '@mui/icons-material/Instagram';
 
 export const aboutViewNavigationData: INavigationElement = {
   key: ViewKeys.AboutView,
@@ -48,29 +45,14 @@ const AboutView: React.FC<Props> = (props) => {
       Icon: GitHubIcon
     },
     {
-      ariaLabel: 'Npm',
-      url: 'https://www.npmjs.com/~daniel.neuweiler',
-      Icon: NpmIcon
-    },
-    {
-      ariaLabel: 'ArtStation',
-      url: 'https://www.artstation.com/danielneuweiler',
-      Icon: ArtstationIcon
-    },
-    {
-      ariaLabel: 'Twitter',
-      url: 'https://twitter.com/DanielNeuweiler',
-      Icon: TwitterIcon
+      ariaLabel: 'X',
+      url: 'https://x.com/DanielNeuweiler',
+      Icon: XIcon
     },
     {
       ariaLabel: 'Facebook',
       url: 'https://www.facebook.com/daniel.neuweiler.1/',
       Icon: FacebookIcon
-    },
-    {
-      ariaLabel: 'Instagram',
-      url: 'https://www.instagram.com/danielneuweiler/',
-      Icon: InstagramIcon
     }
   ];
 

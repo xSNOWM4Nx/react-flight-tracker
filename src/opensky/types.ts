@@ -80,7 +80,7 @@ export const resolvePositionSource = (positionSource: number): string => {
 
 export const resolveCategory = (category: number): string => {
 
-  var reslovedCategory = 'Unknown category';
+  var reslovedCategory = `Unknown category ${category}`;
   switch (category) {
     case 0:
       reslovedCategory = 'No information at all';
@@ -131,10 +131,10 @@ export const resolveCategory = (category: number): string => {
       reslovedCategory = 'Space / Trans-atmospheric vehicle';
       break;
     case 16:
-      reslovedCategory = 'Surface Vehicle – Emergency Vehicle';
+      reslovedCategory = 'Surface Vehicle - Emergency Vehicle';
       break;
     case 17:
-      reslovedCategory = 'Surface Vehicle – Service Vehicle';
+      reslovedCategory = 'Surface Vehicle - Service Vehicle';
       break;
     case 18:
       reslovedCategory = 'Point Obstacle (includes tethered balloons)';

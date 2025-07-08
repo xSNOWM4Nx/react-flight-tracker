@@ -5,7 +5,7 @@ import { Box, Typography, IconButton, CircularProgress, useTheme } from '@mui/ma
 import { getFormattedValue, getIcon, getRotation, getStatusText } from '../helpers/aircraftDataFunctions.js';
 
 // Types
-import type { IAircraftTrack, resolvePositionSource, resolveCategory } from '../opensky/types.js';
+import { type IAircraftTrack, type resolvePositionSource, resolveCategory } from '../opensky/types.js';
 import type { SxProps, Theme } from '@mui/material';
 
 // Icons
@@ -404,6 +404,7 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
             variant='body1'>
             {stateVector.squawk ? stateVector.squawk : -1}
           </Typography>
+
         </Box>
 
       </Box>
