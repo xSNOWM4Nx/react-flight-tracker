@@ -2,13 +2,12 @@ import React, { useContext, useRef, useState, useEffect } from 'react';
 import { Box, useTheme } from '@mui/material';
 import ReactMap, { FullscreenControl, NavigationControl } from 'react-map-gl/mapbox';
 import { Map } from 'mapbox-gl';
-import { AppContext } from '../components/infrastructure/AppContextProvider.js';
+import { AppContext, SettingKeys } from '../components/infrastructure/AppContextProvider.js';
 import { svgToImageAsync } from '../helpers/imageFunctions.js';
 import { Constants } from './../mapbox/constants.js';
 import AircraftInfoOverlay from './AircraftInfoOverlay';
 import DataOverlay from './DataOverlay';
 import AircraftLayer, { aircraftLayerId } from './AircraftLayer';
-import { SettingKeys } from './../views/SettingsView';
 
 // Types
 import type { Feature } from 'geojson';
@@ -191,8 +190,7 @@ const FlightMap: React.FC<Props> = (props) => {
   }
 
   // Get settings
-  // const showDataOverlayOnMap = systemContext.getSetting(SettingKeys.ShowDataOverlayOnMap);
-  // const showLogOverlayOnMap = systemContext.getSetting(SettingKeys.ShowLogOverlayOnMap);
+  const showDataOverlayOnMap = appContext.pullSetting(SettingKeys.ShowDataOverlayOnMap);
 
   return (
 
@@ -220,7 +218,7 @@ const FlightMap: React.FC<Props> = (props) => {
       <NavigationControl
         position='bottom-right' />
 
-      {/* {showDataOverlayOnMap &&
+      {showDataOverlayOnMap &&
         <Box
           sx={{
             position: 'absolute',
@@ -231,17 +229,6 @@ const FlightMap: React.FC<Props> = (props) => {
             stateVectors={props.stateVectors} />
         </Box>
       }
-
-      {showLogOverlayOnMap &&
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: 186,
-            right: 50
-          }}>
-          <LogOverlay />
-        </Box>
-      } */}
 
       {props.selectedAircraft &&
         <Box

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Box, Typography, Card, CardContent, FormGroup, FormControl, FormControlLabel, InputLabel, Switch, Select, MenuItem } from '@mui/material';
-import { AppContext } from '../components/infrastructure/AppContextProvider.js';
+import { AppContext, SettingKeys } from '../components/infrastructure/AppContextProvider.js';
 import { NavigationTypeEnumeration } from '../navigation/navigationTypes.js';
 import { ViewKeys } from './viewKeys.js';
 import { ThemeKeys } from './../styles';
@@ -18,11 +18,6 @@ export const settingsViewNavigationData: INavigationElement = {
   importPath: 'views/SettingsView',
   type: NavigationTypeEnumeration.Dialog,
   Icon: SettingsIcon
-};
-
-export class SettingKeys {
-  public static ShowDataOverlayOnMap = 'ShowDataOverlayOnMap';
-  public static ShowLogOverlayOnMap = 'ShowLogOverlayOnMap';
 };
 
 interface ILocalProps {
@@ -118,6 +113,18 @@ const SettingsView: React.FC<Props> = (props) => {
           </Typography>
 
           <FormGroup>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  color='secondary'
+                  name={SettingKeys.EnablePathPrediction}
+                  checked={pullSetting(SettingKeys.EnablePathPrediction, 'boolean')}
+                  onChange={handleSettingsChange} />
+              }
+              label="Enable path prediction"
+            />
+
             <FormControlLabel
               control={
                 <Switch
@@ -128,16 +135,7 @@ const SettingsView: React.FC<Props> = (props) => {
               }
               label="Show data overlay on map"
             />
-            <FormControlLabel
-              control={
-                <Switch
-                  color='secondary'
-                  name={SettingKeys.ShowLogOverlayOnMap}
-                  checked={pullSetting(SettingKeys.ShowLogOverlayOnMap, 'boolean')}
-                  onChange={handleSettingsChange} />
-              }
-              label="Show log overlay on map"
-            />
+
           </FormGroup>
         </CardContent>
       </Card>

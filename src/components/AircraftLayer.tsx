@@ -1,7 +1,7 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Source, Layer } from 'react-map-gl/mapbox';
 import { useTheme } from '@mui/material';
-import { AppContext } from '../components/infrastructure/AppContextProvider.js';
+import { AppContext, SettingKeys } from '../components/infrastructure/AppContextProvider.js';
 import { ServiceKeys } from './../services/serviceKeys.js';
 import { getFormattedValue, getIconName, getRotation, getColor } from '../helpers/aircraftDataFunctions.js';
 
@@ -34,8 +34,8 @@ const AircraftLayer: React.FC<Props> = (props) => {
   const [predictionTime, setPredictionTime] = useState<number | undefined>(undefined);
 
   // Contexts
-  const sppContext = useContext(AppContext)
-  const geospatialService = sppContext.getService<IGeospatialService>(ServiceKeys.GeospatialService);
+  const appContext = useContext(AppContext)
+  const geospatialService = appContext.getService<IGeospatialService>(ServiceKeys.GeospatialService);
 
   // Refs
   const pathPredictionSubscriptionRef = useRef<string>('');
@@ -78,6 +78,10 @@ const AircraftLayer: React.FC<Props> = (props) => {
 
     if (props.stateVectors.time !== predictionTime || predictionTime === undefined)
       setPredictionTime(props.stateVectors.time);
+
+    const enablePathPrediction = appContext.pullSetting(SettingKeys.EnablePathPrediction) as boolean;
+    if (!enablePathPrediction)
+      return;
 
     if (!geospatialService)
       return;

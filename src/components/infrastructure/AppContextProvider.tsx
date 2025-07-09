@@ -5,6 +5,11 @@ import { ThemeKeys } from '../../styles';
 // Types
 import type { IService } from '../../services/infrastructure/serviceTypes.js';
 
+export class SettingKeys {
+  public static EnablePathPrediction = 'EnablePathPrediction';
+  public static ShowDataOverlayOnMap = 'ShowDataOverlayOnMap';
+};
+
 // Definition for app context props
 export interface AppContextProps {
   hasConnectionErrors: boolean;
@@ -57,6 +62,7 @@ const AppContextProvider: React.FC<Props> = (props) => {
     }
 
     serviceProviderRef.current.startServices();
+    seedDefaultSettings();
 
     // Unmount
     return () => {
@@ -64,6 +70,11 @@ const AppContextProvider: React.FC<Props> = (props) => {
       serviceProviderRef.current.stopServices();
     }
   }, []);
+
+  const seedDefaultSettings = () => {
+    handlePushSetting(SettingKeys.EnablePathPrediction, true);
+    handlePushSetting(SettingKeys.ShowDataOverlayOnMap, false);
+  };
 
   const handleThemeChange = (themeName: string) => {
 
