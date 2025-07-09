@@ -7,11 +7,13 @@ import { getFormattedValue, getIconName, getRotation, getColor } from '../helper
 
 // Types
 import type { SymbolLayerSpecification, ExpressionSpecification, StyleSpecification } from 'mapbox-gl';
+import type { ViewState } from 'react-map-gl/mapbox';
 import type { FeatureCollection, Feature, GeoJsonProperties, Point, Position } from 'geojson';
 import type { IGeospatialService } from './../services/geospatialService.js';
 import type { IStateVectorData, IAircraftTrack } from '../opensky/types.js';
 
 interface ILocalProps {
+  viewState: ViewState;
   stateVectors: IStateVectorData;
   zoom?: number;
   selectedAircraft?: IAircraftTrack;
@@ -66,6 +68,12 @@ const AircraftLayer: React.FC<Props> = (props) => {
       }
     }
   }, []);
+  useEffect(() => {
+
+    if (geospatialService)
+      geospatialService.stopPathPrediction();
+
+  }, [props.viewState]);
   useEffect(() => {
 
     createFeatureCollection(props.stateVectors, pathPredictions)

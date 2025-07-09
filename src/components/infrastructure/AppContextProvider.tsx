@@ -10,6 +10,13 @@ export class SettingKeys {
   public static ShowDataOverlayOnMap = 'ShowDataOverlayOnMap';
 };
 
+const getDefaultSettings = () => {
+  return {
+    [SettingKeys.EnablePathPrediction]: true,
+    [SettingKeys.ShowDataOverlayOnMap]: true
+  };
+};
+
 // Definition for app context props
 export interface AppContextProps {
   hasConnectionErrors: boolean;
@@ -48,7 +55,7 @@ const AppContextProvider: React.FC<Props> = (props) => {
   // States
   const [hasConnectionErrors, setConnectionErrors,] = useState(false);
   const [activeThemeName, setActiveThemeName] = useState(ThemeKeys.DarkTheme);
-  const [settingsStorage, setSettingsStorage] = useState<{ [key: string]: any }>({});
+  const [settingsStorage, setSettingsStorage] = useState<{ [key: string]: any }>(getDefaultSettings());
 
   // Effects
   useEffect(() => {
@@ -62,7 +69,6 @@ const AppContextProvider: React.FC<Props> = (props) => {
     }
 
     serviceProviderRef.current.startServices();
-    seedDefaultSettings();
 
     // Unmount
     return () => {
@@ -70,11 +76,6 @@ const AppContextProvider: React.FC<Props> = (props) => {
       serviceProviderRef.current.stopServices();
     }
   }, []);
-
-  const seedDefaultSettings = () => {
-    handlePushSetting(SettingKeys.EnablePathPrediction, true);
-    handlePushSetting(SettingKeys.ShowDataOverlayOnMap, false);
-  };
 
   const handleThemeChange = (themeName: string) => {
 

@@ -246,6 +246,7 @@ const FlightMap: React.FC<Props> = (props) => {
       }
 
       <AircraftLayer
+        viewState={viewState}
         stateVectors={props.stateVectors}
         zoom={viewState.zoom}
         selectedAircraft={props.selectedAircraft} />
