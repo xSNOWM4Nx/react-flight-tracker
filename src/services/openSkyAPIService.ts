@@ -8,8 +8,8 @@ import type { IService } from './infrastructure/serviceTypes.js';
 import type { IRESTService } from './restService.js';
 import type { IStateVectorData, IStateVectorRawData, IStateVector, IAircraftFlight, IAircraftTrack, IMapGeoBounds } from './../opensky/types';
 
-const defaultStateInterval: number = 12000;
-const registeredSatetInterval: number = 6000;
+const defaultStateInterval: number = 10000;
+const registeredSatetInterval: number = 5000;
 const metadataInterval: number = 5000;
 
 export type StateVectorsUpdatedCallbackMethod = (stateVectors: IStateVectorData) => void;
@@ -128,7 +128,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     // this.fetchAircraftData();
 
     const fetchStateVectorInterval: number = this.hasCredentials ? registeredSatetInterval : defaultStateInterval;
-    this.fetchAircraftStateIntervalID = window.setInterval(this.fetchAircraftState, fetchStateVectorInterval);
+    this.fetchAircraftStateIntervalID = window.setTimeout(this.fetchAircraftState, fetchStateVectorInterval);
   };
 
   public releaseTrack = (icao24: string) => {
@@ -205,7 +205,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
     }
 
     const fetchStateVectorInterval: number = this.hasCredentials ? registeredSatetInterval : defaultStateInterval;
-    this.fetchStateVectorsIntervalID = window.setInterval(this.fetchStateVectors, fetchStateVectorInterval);
+    this.fetchStateVectorsIntervalID = window.setTimeout(this.fetchStateVectors, fetchStateVectorInterval);
 
     return true;
   };
@@ -309,6 +309,8 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
       .finally(() => {
 
         this.isFetchingStateVectors = false;
+        const fetchStateVectorInterval: number = this.hasCredentials ? registeredSatetInterval : defaultStateInterval;
+        this.fetchStateVectorsIntervalID = window.setTimeout(this.fetchStateVectors, fetchStateVectorInterval);
       })
   };
 
@@ -348,6 +350,8 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
       .finally(() => {
 
         this.isFetchingAircraftStateVector = false;
+        const fetchStateVectorInterval: number = this.hasCredentials ? registeredSatetInterval : defaultStateInterval;
+        this.fetchAircraftStateIntervalID = window.setTimeout(this.fetchAircraftState, fetchStateVectorInterval);
       })
   };
 

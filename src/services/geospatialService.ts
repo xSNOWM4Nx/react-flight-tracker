@@ -23,7 +23,6 @@ type PredictionState = {
 };
 
 export interface IGeospatialService extends IService {
-  currentPredictionVectorTime: number;
   restartPathPrediction: (stateVectors: IStateVectorData) => void;
   stopPathPrediction: () => void;
   onPathPredictionUpdated: (contextKey: string, callbackHandler: PathPredictionUpdatedCallbackMethod) => string;
@@ -31,9 +30,6 @@ export interface IGeospatialService extends IService {
 };
 
 export class GeospatialService extends Service implements IGeospatialService {
-
-  // IGeospatialService
-  public currentPredictionVectorTime: number = 0;
 
   // Props
   private pathPredictionInterval: number = 200;
@@ -49,8 +45,7 @@ export class GeospatialService extends Service implements IGeospatialService {
 
   public restartPathPrediction = (stateVectors: IStateVectorData) => {
     clearInterval(this.pathPredictionIntervalID);
-    this.currentPredictionVectorTime = stateVectors.time;
-    this.pathPredictionIntervalID = window.setInterval(this.calculatePath, this.pathPredictionInterval, stateVectors);
+    this.pathPredictionIntervalID = window.setTimeout(this.calculatePath, this.pathPredictionInterval, stateVectors);
   };
 
   public stopPathPrediction = () => {
@@ -172,5 +167,7 @@ export class GeospatialService extends Service implements IGeospatialService {
 
     // Trigger callbacks
     Object.values(this.pathPredictionUpdatedSubscriberDictionary).forEach(cb => cb(features));
+
+    this.pathPredictionIntervalID = window.setTimeout(this.calculatePath, this.pathPredictionInterval, stateVectors);
   };
 }
