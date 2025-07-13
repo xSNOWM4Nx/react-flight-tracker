@@ -1,12 +1,11 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import AboutContent from '../components/infrastructure/AboutContent';
-import { NavigationTypeEnumeration } from '../navigation/navigationTypes';
 import { ViewKeys } from './viewKeys';
 
 // Types
 import type { IAboutData } from '../components/infrastructure/AboutContent';
-import type { INavigationElement, INavigationElementProps } from '../navigation/navigationTypes';
+import type { INavigationElementProps } from '../navigation/navigationTypes';
 
 // Icons
 import InfoIcon from '@mui/icons-material/Info';
@@ -14,14 +13,6 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import XIcon from '@mui/icons-material/X';
 import FacebookIcon from '@mui/icons-material/Facebook';
-
-export const aboutViewNavigationData: INavigationElement = {
-  key: ViewKeys.AboutView,
-  name: 'About',
-  importPath: 'views/AboutView',
-  type: NavigationTypeEnumeration.Dialog,
-  Icon: InfoIcon
-};
 
 interface ILocalProps {
 }

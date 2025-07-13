@@ -1,24 +1,12 @@
 import React, { useContext } from 'react';
 import { Box, Typography, Card, CardContent, FormGroup, FormControl, FormControlLabel, InputLabel, Switch, Select, MenuItem } from '@mui/material';
 import { AppContext, SettingKeys } from '../components/infrastructure/AppContextProvider.js';
-import { NavigationTypeEnumeration } from '../navigation/navigationTypes.js';
 import { ViewKeys } from './viewKeys.js';
 import { ThemeKeys } from './../styles';
 
 // Types
 import type { SelectChangeEvent } from '@mui/material';
-import type { INavigationElement, INavigationElementProps } from '../navigation/navigationTypes';
-
-// Icons
-import SettingsIcon from '@mui/icons-material/Settings';
-
-export const settingsViewNavigationData: INavigationElement = {
-  key: ViewKeys.SettingsView,
-  name: 'Settings',
-  importPath: 'views/SettingsView',
-  type: NavigationTypeEnumeration.Dialog,
-  Icon: SettingsIcon
-};
+import type { INavigationElementProps } from '../navigation/navigationTypes';
 
 interface ILocalProps {
 }

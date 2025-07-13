@@ -2,26 +2,14 @@ import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Box } from '@mui/material';
 import { AppContext } from '../components/infrastructure/AppContextProvider.js';
 import { ServiceKeys } from './../services/serviceKeys.js';
-import { NavigationTypeEnumeration } from '../navigation/navigationTypes';
 import { ViewKeys } from './viewKeys';
 import FlightMap from './../components/FlightMap';
 
-// Icons
-import FlightIcon from '@mui/icons-material/Flight';
-
 // Types
 import type { ViewState } from 'react-map-gl/mapbox';
-import type { INavigationElement, INavigationElementProps } from '../navigation/navigationTypes.js';
+import type { INavigationElementProps } from '../navigation/navigationTypes.js';
 import type { IOpenSkyAPIService } from './../services/openSkyAPIService.js';
 import type { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky/types.js';
-
-export const mapViewNavigationData: INavigationElement = {
-  key: ViewKeys.MapView,
-  name: 'Map',
-  importPath: 'views/MapView',
-  type: NavigationTypeEnumeration.View,
-  Icon: FlightIcon
-};
 
 interface ILocalProps {
 }
@@ -102,6 +90,55 @@ const MapView: React.FC<Props> = (props) => {
 
     setTrackedAircraft(undefined);
   };
+
+  const renderNoMapboxToken = () => {
+
+    console.error('-------------->>>>Mapbox token is not set. Please set the VITE_REACT_MAPBOX_TOKEN environment variable in your .env.local file.');
+
+    return (
+      <Box
+        sx={{
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+        <Box
+          sx={{
+            textAlign: 'center',
+            padding: 2,
+            color: 'red'
+          }}>
+          <h2>Mapbox Token is not set</h2>
+          <p>Please set the <code>VITE_REACT_MAPBOX_TOKEN</code> environment variable in your .env.local file.</p>
+        </Box>
+      </Box>
+    );
+  };
+
+  if (import.meta.env.VITE_REACT_MAPBOX_TOKEN === null ||
+    import.meta.env.VITE_REACT_MAPBOX_TOKEN === undefined ||
+    import.meta.env.VITE_REACT_MAPBOX_TOKEN === '')
+    return (
+      <Box
+        sx={{
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignContent: 'center',
+          justifyContent: 'center'
+        }}>
+        <Box
+          sx={{
+            textAlign: 'center',
+            padding: 2
+          }}>
+          <h2>Mapbox Token is not set</h2>
+          <p>Please set the <code>VITE_REACT_MAPBOX_TOKEN</code> environment variable in your .env.local file.</p>
+        </Box>
+      </Box>
+    );
 
   return (
 

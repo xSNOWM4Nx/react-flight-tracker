@@ -1,21 +1,9 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { NavigationTypeEnumeration } from '../navigation/navigationTypes';
 import { ViewKeys } from './viewKeys';
 
 // Types
-import type { INavigationElement, INavigationElementProps } from '../navigation/navigationTypes';
-
-// Icons
-import ErrorIcon from '@mui/icons-material/Error';
-
-export const errorViewNavigationData: INavigationElement = {
-  key: ViewKeys.ErrorView,
-  name: 'Error',
-  importPath: 'views/ErrorView',
-  type: NavigationTypeEnumeration.View,
-  Icon: ErrorIcon
-};
+import type { INavigationElementProps } from '../navigation/navigationTypes';
 
 interface ILocalProps {
 }

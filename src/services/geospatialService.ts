@@ -1,5 +1,6 @@
 import destination from '@turf/destination';
 import { Service } from './infrastructure/service.js';
+import { StateVectorChangeTypeEnumeration } from '../opensky/types.js';
 
 // Types
 import type { IService } from './infrastructure/serviceTypes.js';
@@ -44,7 +45,52 @@ export class GeospatialService extends Service implements IGeospatialService {
   };
 
   public restartPathPrediction = (stateVectors: IStateVectorData) => {
+
+    // Clear any existing prediction interval
     clearInterval(this.pathPredictionIntervalID);
+
+    // Check for active keys (icao24)
+    const activeKeys = new Set<string>();
+
+    for (const stateVector of stateVectors.states) {
+
+      const key = stateVector.icao24;
+      const lastState = this.predictionStates.get(key);
+      activeKeys.add(key);
+
+      // Adjust the prediction states
+      // Start from the current position if the position has changed or if there is no last state
+      if (stateVector.changeType === StateVectorChangeTypeEnumeration.PositionChanged ||
+        !lastState) {
+
+        this.predictionStates.set(key, {
+          lastKnown: {
+            lat: stateVector.latitude ?? 0,
+            lon: stateVector.longitude ?? 0,
+            time: stateVector.time_position ?? stateVectors.time
+          },
+          lastPredicted: {
+            lat: stateVector.latitude ?? 0,
+            lon: stateVector.longitude ?? 0,
+            time: stateVector.time_position ?? stateVectors.time
+          },
+          velocity: stateVector.velocity ?? 0,
+          bearing: stateVector.true_track ?? 0,
+          verticalRate: stateVector.vertical_rate ?? 0,
+          altitude: stateVector.geo_altitude ?? stateVector.baro_altitude ?? 0,
+          staleCount: 0
+        });
+      }
+    };
+
+    // Optionally remove prediction states that are no longer active
+    for (const existingKey of Array.from(this.predictionStates.keys())) {
+      if (!activeKeys.has(existingKey)) {
+        this.predictionStates.delete(existingKey);
+      }
+    }
+
+    // Restart the prediction process
     this.pathPredictionIntervalID = window.setTimeout(this.calculatePath, this.pathPredictionInterval, stateVectors);
   };
 
@@ -93,81 +139,57 @@ export class GeospatialService extends Service implements IGeospatialService {
   private calculatePath = (stateVectors: IStateVectorData) => {
 
     const features: Array<Feature<Point, GeoJsonProperties>> = [];
-    const now = stateVectors.time;
 
     for (const stateVector of stateVectors.states) {
 
       const key = stateVector.icao24;
-      const lastState = this.predictionStates.get(key);
-
-      let isNewPosition = false;
-      if (
-        lastState &&
-        lastState.lastKnown.lat === stateVector.latitude &&
-        lastState.lastKnown.lon === stateVector.longitude &&
-        lastState.lastKnown.time === stateVector.time_position
-      ) {
-        // No new data -> Predict from last prediction
-        lastState.staleCount += 1;
-      } else {
-        // Received new position data
-        isNewPosition = true;
+      const predictionState = this.predictionStates.get(key);
+      if (!predictionState) {
+        continue;
       }
 
-      // Extract current values
-      const lat = stateVector.latitude ?? (lastState?.lastPredicted.lat ?? 0);
-      const lon = stateVector.longitude ?? (lastState?.lastPredicted.lon ?? 0);
-      const time = stateVector.time_position ?? now;
-      const velocity = stateVector.velocity ?? lastState?.velocity ?? 0;
-      const bearing = stateVector.true_track ?? lastState?.bearing ?? 0;
-      const verticalRate = stateVector.vertical_rate ?? lastState?.verticalRate ?? 0;
-      let altitude = stateVector.geo_altitude;
-      if (altitude == null || altitude < 0) altitude = stateVector.baro_altitude;
-      if (altitude == null || altitude < 0) altitude = lastState?.altitude ?? 0;
+      // Values for prediction
+      const lastPred = predictionState.lastPredicted;
+      const velocity = predictionState.velocity;
+      const bearing = predictionState.bearing;
+      const verticalRate = predictionState.verticalRate;
+      const altitude = predictionState.altitude;
+      const staleCount = predictionState.staleCount;
 
-      // Prediction calculation
-      let origin: [number, number];
-      let predictionTime: number;
-      let dt: number; // Time in seconds since last update
+      // Time difference in seconds
+      const dt = this.pathPredictionInterval / 1000;
+      const newTime = lastPred.time + dt;
 
-      if (lastState && !isNewPosition) {
-        origin = [lastState.lastPredicted.lon, lastState.lastPredicted.lat];
-        predictionTime = lastState.lastPredicted.time + this.pathPredictionInterval / 1000;
-        dt = this.pathPredictionInterval / 1000;
-      } else {
-        origin = [lon, lat];
-        predictionTime = time;
-        dt = 0;
-      }
+      // Origin: last predicted position
+      const origin: [number, number] = [lastPred.lon, lastPred.lat];
 
-      // Calculate distance based on velocity and time (velocity = m/s * dt)
+      // Calculate distance based on velocity and vertical rate
       let distance = velocity * dt;
       if (verticalRate !== 0) distance -= (verticalRate * dt);
       if (altitude > 0) distance = (distance * earthRadius) / (earthRadius + altitude);
 
+      // Calculate the destination point
       const predicted = destination(origin, distance, bearing, { units: "meters" });
+      predicted.properties = { icao24: key };
 
-      // Properties for assignment
-      predicted.properties = { icao24: stateVector.icao24 };
-
-      // Update prediction state 
+      // Update last predicted position and time
       this.predictionStates.set(key, {
-        lastKnown: isNewPosition ? { lat, lon, time } : lastState?.lastKnown ?? { lat, lon, time },
+        ...predictionState,
         lastPredicted: {
           lat: predicted.geometry.coordinates[1],
           lon: predicted.geometry.coordinates[0],
-          time: predictionTime,
+          time: newTime,
         },
-        velocity, bearing, verticalRate, altitude,
-        staleCount: isNewPosition ? 0 : (lastState?.staleCount ?? 0) + 1,
+        staleCount: staleCount + 1,
       });
 
       features.push(predicted);
     }
 
-    // Trigger callbacks
+    // Callbacks
     Object.values(this.pathPredictionUpdatedSubscriberDictionary).forEach(cb => cb(features));
 
+    // Trigger the next path calculation after the defined interval
     this.pathPredictionIntervalID = window.setTimeout(this.calculatePath, this.pathPredictionInterval, stateVectors);
   };
 }

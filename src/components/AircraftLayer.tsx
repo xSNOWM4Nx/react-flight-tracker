@@ -74,8 +74,6 @@ const AircraftLayer: React.FC<Props> = (props) => {
   }, [props.stateVectors.time, pathPredictions]);
   useEffect(() => {
 
-    setPathPredictions([]);
-
     if (!geospatialService)
       return;
 
@@ -85,6 +83,7 @@ const AircraftLayer: React.FC<Props> = (props) => {
 
     if (props.stateVectors.states.length > 500) {
       geospatialService.stopPathPrediction();
+      setPathPredictions([]);
       return;
     }
 

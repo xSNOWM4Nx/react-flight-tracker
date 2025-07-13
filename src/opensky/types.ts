@@ -5,7 +5,21 @@ export interface IMapGeoBounds {
   westernLongitude: number;
 };
 
+export interface IStateVectorChangeType {
+  tine_state: number;
+  time_position: number | null;
+  longitude: number | null;
+  latitude: number | null;
+};
+
+export enum StateVectorChangeTypeEnumeration {
+  None,
+  PositionChanged,
+  OtherChanged
+};
+
 export interface IStateVector {
+  changeType: StateVectorChangeTypeEnumeration;
   icao24: string; // Unique ICAO 24-bit address of the transponder in hex string representation.
   callsign: string | null; // Callsign of the vehicle (8 chars). Can be null if no callsign has been received.
   origin_country: string; // Country name inferred from the ICAO 24-bit address.

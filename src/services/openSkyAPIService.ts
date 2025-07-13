@@ -2,11 +2,12 @@ import { Service } from './infrastructure/service.js';
 import { URL, Constants } from './../opensky/constants.js';
 import { ServiceStateEnumeration } from './infrastructure/serviceTypes.js';
 import { ServiceKeys } from './serviceKeys.js';
+import { StateVectorChangeTypeEnumeration } from './../opensky/types';
 
 // Types
 import type { IService } from './infrastructure/serviceTypes.js';
 import type { IRESTService } from './restService.js';
-import type { IStateVectorData, IStateVectorRawData, IStateVector, IAircraftFlight, IAircraftTrack, IMapGeoBounds } from './../opensky/types';
+import type { IStateVectorData, IStateVectorRawData, IStateVectorChangeType, IStateVector, IAircraftFlight, IAircraftTrack, IMapGeoBounds } from './../opensky/types';
 
 const defaultStateInterval: number = 10000;
 const registeredSatetInterval: number = 5000;
@@ -42,6 +43,7 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
   private expiresAt: number = 0; // Unix Timestamp in ms
   private hasCredentials: boolean = false;
   private getRequestInit: RequestInit = {};
+  private lastPositions = new Map<string, IStateVectorChangeType>();
 
   private fetchStateVectorsIntervalID: number = 0;
   private isFetchingStateVectors: boolean = false;
@@ -232,7 +234,27 @@ export class OpenSkyAPIService extends Service implements IOpenSkyAPIService {
 
     for (var rawStateVector of rawData.states) {
 
+      let changeType = StateVectorChangeTypeEnumeration.None;
+      const lastVectorPosition = this.lastPositions.get(rawStateVector[0]);
+      if (!lastVectorPosition) {
+        changeType = StateVectorChangeTypeEnumeration.PositionChanged;
+      }
+      else if (lastVectorPosition.latitude !== rawStateVector[6] || lastVectorPosition.longitude !== rawStateVector[5]) {
+        changeType = StateVectorChangeTypeEnumeration.PositionChanged;
+      }
+      else if (lastVectorPosition.tine_state !== rawData.time) {
+        changeType = StateVectorChangeTypeEnumeration.OtherChanged;
+      }
+
+      this.lastPositions.set(rawStateVector[0], {
+        tine_state: rawData.time,
+        time_position: rawStateVector[3],
+        latitude: rawStateVector[6],
+        longitude: rawStateVector[5]
+      });
+
       const stateVector: IStateVector = {
+        changeType: changeType,
         icao24: rawStateVector[0],
         callsign: rawStateVector[1],
         origin_country: rawStateVector[2],
