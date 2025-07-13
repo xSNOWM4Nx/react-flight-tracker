@@ -1,15 +1,15 @@
 /* eslint-disable react/react-in-jsx-scope -- Unaware of jsxImportSource */
 /** @jsxImportSource @emotion/react */
 import React, { useState, useRef, useEffect } from 'react';
-import { ScrollContainer, Indicator1 } from '@daniel.neuweiler/react-lib-module';
+import { Box, Typography, IconButton, CircularProgress } from '@mui/material';
+import { getFormattedValue, getIcon, getRotation, getStatusText } from '../helpers/aircraftDataFunctions.js';
 
-import { Box, Typography, IconButton } from '@mui/material';
-import { useTheme, Theme } from '@mui/material/styles';
-import { SxProps } from '@mui/system';
+// Types
+import { type IAircraftTrack, type resolvePositionSource, resolveCategory } from '../opensky/types.js';
+import type { SxProps, Theme } from '@mui/material';
+
+// Icons
 import CloseIcon from '@mui/icons-material/Close';
-
-import { IAircraftTrack, resolvePositionSource, resolveCategory } from '../opensky';
-import { getFormattedValue, getIcon, getRotation, getStatusText } from '../helpers';
 
 interface ILocalProps {
   selectedAircraft?: IAircraftTrack;
@@ -18,9 +18,6 @@ interface ILocalProps {
 type Props = ILocalProps;
 
 const AircraftInfoOverlay: React.FC<Props> = (props) => {
-
-  // External hooks
-  const theme = useTheme();
 
   // States
   const [lastPositionPastSeconds, setLastPositionPastSeconds] = useState(0);
@@ -105,21 +102,24 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
           }}>
 
           <Box
-            sx={{
-              backgroundColor: theme.palette.primary.main,
-              borderRadius: '50%',
-              width: 48,
-              height: 48,
-              display: 'flex',
-              alignItems: 'center',
-              alignContent: 'center',
-              justifyItems: 'center',
-              justifyContent: 'center',
-              textAlign: 'center'
+            sx={(theme) => {
+
+              return {
+                backgroundColor: theme.palette.primary.main,
+                borderRadius: '50%',
+                width: 48,
+                height: 48,
+                display: 'flex',
+                alignItems: 'center',
+                alignContent: 'center',
+                justifyItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center'
+              }
             }}>
 
             <FlightIcon
-              css={(theme) => ({
+              css={(theme: Theme) => ({
                 fill: theme.palette.primary.contrastText,
                 width: 32,
                 height: 32,
@@ -170,12 +170,15 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
         </Box>
 
         <Box
-          sx={{
-            width: '100%',
-            height: 2,
-            marginTop: 1,
-            marginBottom: 2,
-            backgroundColor: (theme) => theme.palette.primary.main
+          sx={(theme) => {
+
+            return {
+              width: '100%',
+              height: 2,
+              marginTop: 1,
+              marginBottom: 2,
+              backgroundColor: theme.palette.primary.main
+            }
           }} />
 
       </React.Fragment>
@@ -247,7 +250,12 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
 
     return (
 
-      <ScrollContainer>
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          overflow: 'auto'
+        }}>
 
         <Box
           sx={textContainerStyle}>
@@ -399,9 +407,10 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
             variant='body1'>
             {stateVector.squawk ? stateVector.squawk : -1}
           </Typography>
+
         </Box>
 
-      </ScrollContainer>
+      </Box>
     );
   };
 
@@ -409,46 +418,53 @@ const AircraftInfoOverlay: React.FC<Props> = (props) => {
     return (
 
       <Box
-        sx={{
-          position: 'relative',
-          minWidth: 268,
-          minHeight: 84,
-          height: '100%',
-          backgroundColor: theme.palette.background.paper,
-          borderRadius: 2,
-          boxShadow: 5,
-          opacity: 0.9,
-          display: 'flex',
-          flexDirection: 'column',
-          alignContent: 'center',
-          alignItems: 'center',
-          justifyContent: 'center',
-          justifyItems: 'center'
+        sx={(theme) => {
+
+          return {
+            position: 'relative',
+            minWidth: 268,
+            minHeight: 84,
+            height: '100%',
+            backgroundColor: theme.palette.background.paper,
+            borderRadius: 2,
+            boxShadow: 5,
+            opacity: 0.9,
+            display: 'flex',
+            flexDirection: 'column',
+            alignContent: 'center',
+            alignItems: 'center',
+            justifyContent: 'center',
+            justifyItems: 'center'
+          }
         }}>
 
-        <Indicator1
-          color={theme.palette.primary.main} />
+        <CircularProgress
+          color='primary'
+          size={32} />
       </Box>
     );
 
   return (
 
     <Box
-      sx={{
-        overflow: 'hidden',
-        position: 'relative',
-        maxHeight: 'calc(100vh - 160px)',
-        minWidth: 268,
-        width: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        alignContent: 'flex-start',
-        backgroundColor: theme.palette.background.paper,
-        borderRadius: 2,
-        boxShadow: 5,
-        opacity: 0.9,
-        padding: theme.spacing(1)
+      sx={(theme) => {
+
+        return {
+          overflow: 'hidden',
+          position: 'relative',
+          maxHeight: 'calc(100vh - 160px)',
+          minWidth: 268,
+          width: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          alignContent: 'flex-start',
+          backgroundColor: theme.palette.background.paper,
+          borderRadius: 2,
+          boxShadow: 5,
+          opacity: 0.9,
+          padding: theme.spacing(1)
+        }
       }}>
 
       {renderHeader()}

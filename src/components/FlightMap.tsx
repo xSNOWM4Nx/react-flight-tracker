@@ -1,24 +1,25 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import { Box, useTheme } from '@mui/material';
-import ReactMap, { MapRef, FullscreenControl, NavigationControl, ViewState, ViewStateChangeEvent, MapEvent, MapLayerMouseEvent, MapStyleDataEvent } from 'react-map-gl';
-import { Feature } from 'geojson';
-import { svgToImageAsync } from '@daniel.neuweiler/ts-lib-module';
-import { SystemContext } from '@daniel.neuweiler/react-lib-module';
-
+import ReactMap, { FullscreenControl, NavigationControl } from 'react-map-gl/mapbox';
+import { Map } from 'mapbox-gl';
+import { AppContext, SettingKeys } from '../components/infrastructure/AppContextProvider.js';
+import { svgToImageAsync } from '../helpers/imageFunctions.js';
+import { Constants } from './../mapbox/constants.js';
 import AircraftInfoOverlay from './AircraftInfoOverlay';
 import DataOverlay from './DataOverlay';
-import LogOverlay from './LogOverlay';
 import AircraftLayer, { aircraftLayerId } from './AircraftLayer';
-import { Constants } from './../mapbox';
-import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
-import { SettingKeys } from './../views/SettingsView';
 
+// Types
+import type { Feature } from 'geojson';
+import type { MapRef, ViewState, ViewStateChangeEvent, MapEvent, MapMouseEvent, MapStyleDataEvent } from 'react-map-gl/mapbox';
+import type { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky/types.js';
+
+// Icons
 import FlightIcon from './../resources/flight-24px.svg';
 import FlightLandIcon from './../resources/flight_land-24px.svg';
 import FlightLandFlippedIcon from './../resources/flight_land-24px_flippedx.svg';
 import FlightTakeoffIcon from './../resources/flight_takeoff-24px.svg';
 import FlightTakeoffFlippedIcon from './../resources/flight_takeoff-24px_flippedx.svg';
-import { Map } from 'mapbox-gl';
 
 interface ILocalProps {
   stateVectors: IStateVectorData;
@@ -35,7 +36,7 @@ const FlightMap: React.FC<Props> = (props) => {
   const styleTheme = useTheme();
 
   // Contexts
-  const systemContext = useContext(SystemContext);
+  const appContext = useContext(AppContext);
 
   const getDefaultViewState = () => {
 
@@ -92,6 +93,9 @@ const FlightMap: React.FC<Props> = (props) => {
 
       const map = mapRef.current.getMap();
       const mapBounds = map.getBounds();
+      if (!mapBounds)
+        return mapGeoBounds;
+
       mapGeoBounds.northernLatitude = mapBounds.getNorthEast().lat;
       mapGeoBounds.easternLongitude = mapBounds.getNorthEast().lng;
       mapGeoBounds.southernLatitude = mapBounds.getSouthWest().lat;
@@ -130,7 +134,7 @@ const FlightMap: React.FC<Props> = (props) => {
     });
   };
 
-  const handleLoad = (e: MapEvent<undefined>) => {
+  const handleLoad = (e: MapEvent) => {
 
     const map = e.target;
     if (map == undefined)
@@ -141,14 +145,14 @@ const FlightMap: React.FC<Props> = (props) => {
 
   const handleStyleData = (e: MapStyleDataEvent) => {
 
-    const map = e.target;
-    if (map == undefined)
-      return;
+    // const map = e.dataType;
+    // if (map == undefined)
+    //   return;
 
-    addMapSources(map);
+    // addMapSources(map);
   };
 
-  const handleClick = (e: MapLayerMouseEvent) => {
+  const handleClick = (e: MapMouseEvent) => {
 
     if (e.features == undefined || e.features.length <= 0)
       return;
@@ -186,8 +190,7 @@ const FlightMap: React.FC<Props> = (props) => {
   }
 
   // Get settings
-  const showDataOverlayOnMap = systemContext.getSetting(SettingKeys.ShowDataOverlayOnMap);
-  const showLogOverlayOnMap = systemContext.getSetting(SettingKeys.ShowLogOverlayOnMap);
+  const showDataOverlayOnMap = appContext.pullSetting(SettingKeys.ShowDataOverlayOnMap);
 
   return (
 
@@ -227,17 +230,6 @@ const FlightMap: React.FC<Props> = (props) => {
         </Box>
       }
 
-      {showLogOverlayOnMap &&
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: 186,
-            right: 50
-          }}>
-          <LogOverlay />
-        </Box>
-      }
-
       {props.selectedAircraft &&
         <Box
           sx={{
@@ -254,6 +246,7 @@ const FlightMap: React.FC<Props> = (props) => {
       }
 
       <AircraftLayer
+        viewState={viewState}
         stateVectors={props.stateVectors}
         zoom={viewState.zoom}
         selectedAircraft={props.selectedAircraft} />

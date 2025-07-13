@@ -1,15 +1,19 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
-import { ViewState } from 'react-map-gl';
-import { SystemContext, ViewContainer } from '@daniel.neuweiler/react-lib-module';
-
-import { ViewKeys } from './../navigation';
-import { IOpenSkyAPIService } from './../services';
-import { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky';
+import { Box } from '@mui/material';
+import { AppContext } from '../components/infrastructure/AppContextProvider.js';
+import { ServiceKeys } from './../services/serviceKeys.js';
+import { ViewKeys } from './viewKeys';
 import FlightMap from './../components/FlightMap';
+
+// Types
+import type { ViewState } from 'react-map-gl/mapbox';
+import type { INavigationElementProps } from '../navigation/navigationTypes.js';
+import type { IOpenSkyAPIService } from './../services/openSkyAPIService.js';
+import type { IStateVectorData, IAircraftTrack, IMapGeoBounds } from './../opensky/types.js';
 
 interface ILocalProps {
 }
-type Props = ILocalProps;
+type Props = ILocalProps & INavigationElementProps;
 
 const MapView: React.FC<Props> = (props) => {
 
@@ -21,8 +25,8 @@ const MapView: React.FC<Props> = (props) => {
   const [trackedAircraft, setTrackedAircraft] = useState<IAircraftTrack | undefined>(undefined);
 
   // Contexts
-  const systemContext = useContext(SystemContext)
-  const openSkyAPIService = systemContext.getService<IOpenSkyAPIService>('OpenSkyAPIService');
+  const appContext = useContext(AppContext)
+  const openSkyAPIService = appContext.getService<IOpenSkyAPIService>(ServiceKeys.OpenSkyAPIService);
 
   // Refs
   const stateVectorsSubscriptionRef = useRef<string>('');
@@ -58,12 +62,10 @@ const MapView: React.FC<Props> = (props) => {
   }, []);
 
   const handleStateVectorsUpdated = (data: IStateVectorData) => {
-
     setStateVectors(data);
   };
 
   const handleAircraftTrackUpdated = (data: IAircraftTrack) => {
-
     setTrackedAircraft(data);
   };
 
@@ -89,10 +91,64 @@ const MapView: React.FC<Props> = (props) => {
     setTrackedAircraft(undefined);
   };
 
+  const renderNoMapboxToken = () => {
+
+    console.error('-------------->>>>Mapbox token is not set. Please set the VITE_REACT_MAPBOX_TOKEN environment variable in your .env.local file.');
+
+    return (
+      <Box
+        sx={{
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+        <Box
+          sx={{
+            textAlign: 'center',
+            padding: 2,
+            color: 'red'
+          }}>
+          <h2>Mapbox Token is not set</h2>
+          <p>Please set the <code>VITE_REACT_MAPBOX_TOKEN</code> environment variable in your .env.local file.</p>
+        </Box>
+      </Box>
+    );
+  };
+
+  if (import.meta.env.VITE_REACT_MAPBOX_TOKEN === null ||
+    import.meta.env.VITE_REACT_MAPBOX_TOKEN === undefined ||
+    import.meta.env.VITE_REACT_MAPBOX_TOKEN === '')
+    return (
+      <Box
+        sx={{
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignContent: 'center',
+          justifyContent: 'center'
+        }}>
+        <Box
+          sx={{
+            textAlign: 'center',
+            padding: 2
+          }}>
+          <h2>Mapbox Token is not set</h2>
+          <p>Please set the <code>VITE_REACT_MAPBOX_TOKEN</code> environment variable in your .env.local file.</p>
+        </Box>
+      </Box>
+    );
+
   return (
 
-    <ViewContainer
-      isScrollLocked={true}>
+    <Box
+      sx={{
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
 
       <FlightMap
         stateVectors={stateVectors}
@@ -100,7 +156,7 @@ const MapView: React.FC<Props> = (props) => {
         onMapChange={handleMapChange}
         onTrackAircraft={handleTrackAircraft}
         onReleaseTrack={handleReleaseTrack} />
-    </ViewContainer>
+    </Box>
   );
 }
 

@@ -1,22 +1,27 @@
 import React from 'react';
-import { ViewContainer, AboutContent, IAboutData } from '@daniel.neuweiler/react-lib-module';
+import { Box } from '@mui/material';
+import AboutContent from '../components/infrastructure/AboutContent';
+import { ViewKeys } from './viewKeys';
 
+// Types
+import type { IAboutData } from '../components/infrastructure/AboutContent';
+import type { INavigationElementProps } from '../navigation/navigationTypes';
+
+// Icons
+import InfoIcon from '@mui/icons-material/Info';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import { ReactComponent as NpmIcon } from './../resources/icons/npmicon.svg';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import TwitterIcon from '@mui/icons-material/Twitter';
+import XIcon from '@mui/icons-material/X';
 import FacebookIcon from '@mui/icons-material/Facebook';
-import { ReactComponent as ArtstationIcon } from './../resources/icons/artstationicon.svg';
-import InstagramIcon from '@mui/icons-material/Instagram';
 
 interface ILocalProps {
 }
-type Props = ILocalProps;
+type Props = ILocalProps & INavigationElementProps;
 
 const AboutView: React.FC<Props> = (props) => {
 
   // Fields
-  const contextName: string = 'AboutView'
+  const contextName: string = ViewKeys.AboutView;
 
   // Data seeding
   const elements: Array<IAboutData> = [
@@ -31,40 +36,30 @@ const AboutView: React.FC<Props> = (props) => {
       Icon: GitHubIcon
     },
     {
-      ariaLabel: 'Npm',
-      url: 'https://www.npmjs.com/~daniel.neuweiler',
-      Icon: NpmIcon
-    },
-    {
-      ariaLabel: 'ArtStation',
-      url: 'https://www.artstation.com/danielneuweiler',
-      Icon: ArtstationIcon
-    },
-    {
-      ariaLabel: 'Twitter',
-      url: 'https://twitter.com/DanielNeuweiler',
-      Icon: TwitterIcon
+      ariaLabel: 'X',
+      url: 'https://x.com/DanielNeuweiler',
+      Icon: XIcon
     },
     {
       ariaLabel: 'Facebook',
       url: 'https://www.facebook.com/daniel.neuweiler.1/',
       Icon: FacebookIcon
-    },
-    {
-      ariaLabel: 'Instagram',
-      url: 'https://www.instagram.com/danielneuweiler/',
-      Icon: InstagramIcon
     }
   ];
 
   return (
 
-    <ViewContainer
-      isScrollLocked={true}>
+    <Box
+      sx={{
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
 
       <AboutContent
         elements={elements} />
-    </ViewContainer>
+    </Box>
   );
 }
 

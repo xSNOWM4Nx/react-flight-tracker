@@ -1,18 +1,20 @@
 import React, { Suspense, useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeKeys, DarkTheme, LightTheme, PineappleTheme } from './../styles/';
-import { StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
-import { Box, CssBaseline } from '@mui/material';
-import { IService } from '@daniel.neuweiler/ts-lib-module';
-import { SystemContextProvider, ViewContainer, Indicator1 } from '@daniel.neuweiler/react-lib-module';
+import { Box, ThemeProvider, CssBaseline, CircularProgress } from '@mui/material';
+import AppContextProvider from '../components/infrastructure/AppContextProvider.js';
+import NavigationProvider from '../components/infrastructure/NavigationProvider';
+import { navigationElements, getImportableView } from '../navigation/navigationElements';
+import RouterPage from './RouterPage.js';
+import { RESTService } from './../services/restService.js';
+import { GeospatialService } from './../services/geospatialService.js';
+import { OpenSkyAPIService } from './../services/openSkyAPIService.js';
+import { ServiceKeys } from '../services/serviceKeys.js';
+import { ThemeKeys, DarkTheme, LightTheme, PineappleTheme } from './../styles/index.js';
 
-import AppContextProvider from './../contexts/AppContextProvider';
-import RouterPage from './RouterPage';
-import { OpenSkyAPIService, GeospatialService } from './../services';
+// Types
+import type { IService } from './../services/infrastructure/serviceTypes.js';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
-import '@daniel.neuweiler/ts-lib-module/build/src/styles/default.style.css';
-import '@daniel.neuweiler/react-lib-module/build/styles/default.style.css';
 import './../styles/app.style.css';
 
 const App: React.FC = () => {
@@ -41,14 +43,20 @@ const App: React.FC = () => {
     setThemeName(themeName);
   };
 
-  const handleInjectCustomServices = () => {
+  const handleInjectServices = () => {
 
-    var services: Array<IService> = [];
+    const services: Array<IService> = [];
 
-    var openSkyAPIService = new OpenSkyAPIService(import.meta.env.VITE_REACT_OSKY_USERNAME, import.meta.env.VITE_REACT_OSKY_PASSWORD);
+    // REST Service
+    const restService = new RESTService(ServiceKeys.RESTService);
+    services.push(restService);
+
+    // OpenSky API Service
+    const openSkyAPIService = new OpenSkyAPIService(ServiceKeys.OpenSkyAPIService, import.meta.env.VITE_REACT_OSKY_CLIENT_ID, import.meta.env.VITE_REACT_OSKY_CLIENT_SECRET);
     services.push(openSkyAPIService);
 
-    var geospatialService = new GeospatialService();
+    // Geospatial Service
+    const geospatialService = new GeospatialService(ServiceKeys.GeospatialService);
     services.push(geospatialService);
 
     return services;
@@ -56,7 +64,7 @@ const App: React.FC = () => {
 
   const renderFallback = () => {
 
-    const theme = getTheme();
+    //const theme = getTheme();
 
     return (
 
@@ -67,16 +75,17 @@ const App: React.FC = () => {
           overflow: 'hidden',
           userSelect: 'none',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          alignItems: 'center',
+          alignContent: 'center',
+          justifyItems: 'center',
+          justifyContent: 'center'
         }}>
-
-        <ViewContainer
-          isScrollLocked={true}>
-
-          <Indicator1
-            color={theme.palette.primary.main}
-            scale={4.0} />
-        </ViewContainer>
+        <CssBaseline
+          enableColorScheme={true} />
+        <CircularProgress
+          color='primary'
+          size={128} />
       </Box>
     );
   };
@@ -84,26 +93,27 @@ const App: React.FC = () => {
   return (
 
     <BrowserRouter>
-      <StyledEngineProvider
-        injectFirst={true}>
-        <ThemeProvider
-          theme={getTheme()}>
+      <ThemeProvider
+        theme={getTheme()}>
 
-          <Suspense
-            fallback={renderFallback()}>
+        <Suspense
+          fallback={renderFallback()}>
 
-            <SystemContextProvider
-              onInjectCustomServices={handleInjectCustomServices}>
+          <AppContextProvider
+            onInjectServices={handleInjectServices}
+            onThemeChange={handleThemeChange}>
 
-              <AppContextProvider
-                onThemeChange={handleThemeChange}>
-                <CssBaseline />
-                <RouterPage />
-              </AppContextProvider>
-            </SystemContextProvider>
-          </Suspense>
-        </ThemeProvider>
-      </StyledEngineProvider>
+            <NavigationProvider
+              navigationItems={navigationElements}
+              onInject={navigationElement => React.lazy(() => getImportableView(navigationElement.importPath))}>
+
+              <CssBaseline
+                enableColorScheme={true} />
+              <RouterPage />
+            </NavigationProvider>
+          </AppContextProvider>
+        </Suspense>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

@@ -1,8 +1,8 @@
-import { ReactComponent as FlightIcon } from './../resources/flight-24px.svg';
-import { ReactComponent as FlightLandIcon } from './../resources/flight_land-24px.svg';
-import { ReactComponent as FlightLandFlippedIcon } from './../resources/flight_land-24px_flippedx.svg';
-import { ReactComponent as FlightTakeoffIcon } from './../resources/flight_takeoff-24px.svg';
-import { ReactComponent as FlightTakeoffFlippedIcon } from './../resources/flight_takeoff-24px_flippedx.svg';
+import FlightIcon from './../resources/flight-24px.svg?react';
+import FlightLandIcon from './../resources/flight_land-24px.svg?react';
+import FlightLandFlippedIcon from './../resources/flight_land-24px_flippedx.svg?react';
+import FlightTakeoffIcon from './../resources/flight_takeoff-24px.svg?react';
+import FlightTakeoffFlippedIcon from './../resources/flight_takeoff-24px_flippedx.svg?react';
 
 const altitudeStateLimit = 1000;
 

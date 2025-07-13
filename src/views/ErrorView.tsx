@@ -1,11 +1,13 @@
 import React from 'react';
-import { ViewContainer } from '@daniel.neuweiler/react-lib-module';
+import { Box } from '@mui/material';
+import { ViewKeys } from './viewKeys';
 
-import { ViewKeys } from './../navigation';
+// Types
+import type { INavigationElementProps } from '../navigation/navigationTypes';
 
 interface ILocalProps {
 }
-type Props = ILocalProps;
+type Props = ILocalProps & INavigationElementProps;
 
 const ErrorView: React.FC<Props> = (props) => {
 
@@ -14,10 +16,15 @@ const ErrorView: React.FC<Props> = (props) => {
 
   return (
 
-    <ViewContainer
-      isScrollLocked={true}>
+    <Box
+      sx={{
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
 
-    </ViewContainer>
+    </Box>
   );
 }
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { IStateVectorData } from '../opensky';
+
+// Types
+import type { IStateVectorData } from '../opensky/types.js';
 
 interface ILocalProps {
   stateVectors: IStateVectorData;
@@ -11,15 +13,18 @@ const DataOverlay: React.FC<Props> = (props) => {
 
   return (
     <Box
-      sx={{
-        position: 'relative',
-        width: 160,
-        height: 116,
-        backgroundColor: (theme) => theme.palette.background.paper,
-        borderRadius: 2,
-        boxShadow: 5,
-        opacity: 0.9,
-        padding: (theme) => theme.spacing(1)
+      sx={(theme) => {
+
+        return {
+          position: 'relative',
+          width: 160,
+          height: 116,
+          backgroundColor: theme.palette.background.paper,
+          borderRadius: 2,
+          boxShadow: 5,
+          opacity: 0.9,
+          padding: theme.spacing(1)
+        }
       }}>
 
       <Box

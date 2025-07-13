@@ -5,7 +5,21 @@ export interface IMapGeoBounds {
   westernLongitude: number;
 };
 
+export interface IStateVectorChangeType {
+  tine_state: number;
+  time_position: number | null;
+  longitude: number | null;
+  latitude: number | null;
+};
+
+export enum StateVectorChangeTypeEnumeration {
+  None,
+  PositionChanged,
+  OtherChanged
+};
+
 export interface IStateVector {
+  changeType: StateVectorChangeTypeEnumeration;
   icao24: string; // Unique ICAO 24-bit address of the transponder in hex string representation.
   callsign: string | null; // Callsign of the vehicle (8 chars). Can be null if no callsign has been received.
   origin_country: string; // Country name inferred from the ICAO 24-bit address.
@@ -20,7 +34,7 @@ export interface IStateVector {
   vertical_rate: number | null; // Vertical rate in m/s. A positive value indicates that the airplane is climbing, a negative value indicates that it descends. Can be null.
   sensors: Array<number> | null; // IDs of the receivers which contributed to this state vector.Is null if no filtering for sensor was used in the request.
   geo_altitude: number | null; // Geometric altitude in meters. Can be null.
-  squawk: number | null; // The transponder code aka Squawk. Can be null.
+  squawk: string | null; // The transponder code aka Squawk. Can be null.
   spi: boolean; // Whether flight status indicates special purpose indicator.
   position_source: number; // Origin of this state’s position: 0 = ADS-B, 1 = ASTERIX, 2 = MLAT, 3 = FLARM -> see resolvePositionSource()
   category: number; // Aircraft category -> see resolveCategory()
@@ -80,7 +94,7 @@ export const resolvePositionSource = (positionSource: number): string => {
 
 export const resolveCategory = (category: number): string => {
 
-  var reslovedCategory = 'Unknown category';
+  var reslovedCategory = `Unknown category ${category}`;
   switch (category) {
     case 0:
       reslovedCategory = 'No information at all';
@@ -131,10 +145,10 @@ export const resolveCategory = (category: number): string => {
       reslovedCategory = 'Space / Trans-atmospheric vehicle';
       break;
     case 16:
-      reslovedCategory = 'Surface Vehicle – Emergency Vehicle';
+      reslovedCategory = 'Surface Vehicle - Emergency Vehicle';
       break;
     case 17:
-      reslovedCategory = 'Surface Vehicle – Service Vehicle';
+      reslovedCategory = 'Surface Vehicle - Service Vehicle';
       break;
     case 18:
       reslovedCategory = 'Point Obstacle (includes tethered balloons)';
