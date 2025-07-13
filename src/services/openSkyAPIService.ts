@@ -2,12 +2,12 @@ import { Service } from './infrastructure/service.js';
 import { URL, Constants } from './../opensky/constants.js';
 import { ServiceStateEnumeration } from './infrastructure/serviceTypes.js';
 import { ServiceKeys } from './serviceKeys.js';
-import { StateVectorChangeTypeEnumeration } from './../opensky/types';
+import { StateVectorChangeTypeEnumeration } from './../opensky/types.js';
 
 // Types
 import type { IService } from './infrastructure/serviceTypes.js';
 import type { IRESTService } from './restService.js';
-import type { IStateVectorData, IStateVectorRawData, IStateVectorChangeType, IStateVector, IAircraftFlight, IAircraftTrack, IMapGeoBounds } from './../opensky/types';
+import type { IStateVectorData, IStateVectorRawData, IStateVectorChangeType, IStateVector, IAircraftFlight, IAircraftTrack, IMapGeoBounds } from './../opensky/types.js';
 
 const defaultStateInterval: number = 10000;
 const registeredSatetInterval: number = 5000;

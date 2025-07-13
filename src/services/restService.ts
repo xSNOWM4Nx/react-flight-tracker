@@ -1,7 +1,7 @@
-import { Service } from './infrastructure/service';
+import { Service } from './infrastructure/service.js';
 
 // Types
-import type { IService } from './infrastructure/serviceTypes';
+import type { IService } from './infrastructure/serviceTypes.js';
 
 export enum ResponseStateEnumeration {
   Unknown,

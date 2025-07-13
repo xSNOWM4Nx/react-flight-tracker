@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box, Dialog, IconButton, Typography } from '@mui/material';
-import NavigationElementInjector from './NavigationElementInjector';
+import NavigationElementInjector from './NavigationElementInjector.js';
 
 // Types
-import type { INavigationElement, INavigationElementProps } from '../../navigation/navigationTypes';
+import type { INavigationElement, INavigationElementProps } from '../../navigation/navigationTypes.js';
 
 // Icons
 import CloseIcon from '@mui/icons-material/Close';

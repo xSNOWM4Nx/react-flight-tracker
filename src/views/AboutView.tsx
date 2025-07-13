@@ -1,11 +1,11 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import AboutContent from '../components/infrastructure/AboutContent';
-import { ViewKeys } from './viewKeys';
+import AboutContent from '../components/infrastructure/AboutContent.js';
+import { ViewKeys } from './viewKeys.js';
 
 // Types
-import type { IAboutData } from '../components/infrastructure/AboutContent';
-import type { INavigationElementProps } from '../navigation/navigationTypes';
+import type { IAboutData } from '../components/infrastructure/AboutContent.js';
+import type { INavigationElementProps } from '../navigation/navigationTypes.js';
 
 // Icons
 import InfoIcon from '@mui/icons-material/Info';

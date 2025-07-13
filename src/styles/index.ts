@@ -1,6 +1,6 @@
-export * from './darkTheme';
-export * from './lightTheme';
-export * from './pineappleTheme';
+export * from './darkTheme.js';
+export * from './lightTheme.js';
+export * from './pineappleTheme.js';
 
 export class ThemeKeys {
   public static DarkTheme: string = 'Dark';

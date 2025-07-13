@@ -1,9 +1,9 @@
 import React, { useContext, createContext, useState } from 'react';
-import { NavigationTypeEnumeration } from '../../navigation/navigationTypes';
-import NavigationElementDialog from './NavigationElementDialog';
+import { NavigationTypeEnumeration } from '../../navigation/navigationTypes.js';
+import NavigationElementDialog from './NavigationElementDialog.js';
 
 // Types
-import type { INavigationElement, INavigationElementProps } from '../../navigation/navigationTypes';
+import type { INavigationElement, INavigationElementProps } from '../../navigation/navigationTypes.js';
 
 export interface NavigationContextType {
   currentViewElement?: INavigationElement;

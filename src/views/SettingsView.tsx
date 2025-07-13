@@ -2,11 +2,11 @@ import React, { useContext } from 'react';
 import { Box, Typography, Card, CardContent, FormGroup, FormControl, FormControlLabel, InputLabel, Switch, Select, MenuItem } from '@mui/material';
 import { AppContext, SettingKeys } from '../components/infrastructure/AppContextProvider.js';
 import { ViewKeys } from './viewKeys.js';
-import { ThemeKeys } from './../styles';
+import { ThemeKeys } from './../styles/index.js';
 
 // Types
 import type { SelectChangeEvent } from '@mui/material';
-import type { INavigationElementProps } from '../navigation/navigationTypes';
+import type { INavigationElementProps } from '../navigation/navigationTypes.js';
 
 interface ILocalProps {
 }

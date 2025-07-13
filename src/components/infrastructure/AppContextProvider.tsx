@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ServiceProvider } from '../../services/infrastructure/serviceProvider.js';
-import { ThemeKeys } from '../../styles';
+import { ThemeKeys } from '../../styles/index.js';
 
 // Types
 import type { IService } from '../../services/infrastructure/serviceTypes.js';

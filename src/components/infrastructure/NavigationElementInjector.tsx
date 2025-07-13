@@ -1,10 +1,10 @@
 import React, { useMemo, Suspense } from 'react';
 import { Box, CircularProgress } from '@mui/material';
-import { ErrorBoundary } from './ErrorBoundary';
-import { ErrorContent } from './ErrorContent';
+import { ErrorBoundary } from './ErrorBoundary.js';
+import { ErrorContent } from './ErrorContent.js';
 
 // Types
-import type { INavigationElement, INavigationElementProps } from '../../navigation/navigationTypes';
+import type { INavigationElement, INavigationElementProps } from '../../navigation/navigationTypes.js';
 
 interface ILocalProps {
   children?: React.ReactNode;

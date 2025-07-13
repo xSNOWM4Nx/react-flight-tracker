@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { useNavigation } from '../components/infrastructure/NavigationProvider';
-import NavigationElementInjector from '../components/infrastructure/NavigationElementInjector';
-import { getImportableView } from '../navigation/navigationElements';
+import { useNavigation } from '../components/infrastructure/NavigationProvider.js';
+import NavigationElementInjector from '../components/infrastructure/NavigationElementInjector.js';
+import { getImportableView } from '../navigation/navigationElements.js';
 
 interface ILocalProps {
 }

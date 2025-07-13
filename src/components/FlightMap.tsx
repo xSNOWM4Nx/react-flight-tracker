@@ -5,9 +5,9 @@ import { Map } from 'mapbox-gl';
 import { AppContext, SettingKeys } from '../components/infrastructure/AppContextProvider.js';
 import { svgToImageAsync } from '../helpers/imageFunctions.js';
 import { Constants } from './../mapbox/constants.js';
-import AircraftInfoOverlay from './AircraftInfoOverlay';
-import DataOverlay from './DataOverlay';
-import AircraftLayer, { aircraftLayerId } from './AircraftLayer';
+import AircraftInfoOverlay from './AircraftInfoOverlay.js';
+import DataOverlay from './DataOverlay.js';
+import AircraftLayer, { aircraftLayerId } from './AircraftLayer.js';
 
 // Types
 import type { Feature } from 'geojson';

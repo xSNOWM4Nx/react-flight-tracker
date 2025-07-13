@@ -1,10 +1,9 @@
-import { mapViewNavigationData, settingsViewNavigationData, aboutViewNavigationData, errorViewNavigationData } from '../views/viewKeys.ts';
+import { mapViewNavigationData, settingsViewNavigationData, aboutViewNavigationData } from '../views/viewKeys.ts';
 
 // Types
-import type { INavigationElement } from './navigationTypes';
+import type { INavigationElement } from './navigationTypes.js';
 
 export const navigationElements: Array<INavigationElement> = [
-  errorViewNavigationData,
   aboutViewNavigationData,
   settingsViewNavigationData,
   mapViewNavigationData

@@ -1,16 +1,14 @@
-import { NavigationTypeEnumeration } from '../navigation/navigationTypes';
+import { NavigationTypeEnumeration } from '../navigation/navigationTypes.js';
 
 // Types
-import type { INavigationElement } from '../navigation/navigationTypes';
+import type { INavigationElement } from '../navigation/navigationTypes.js';
 
 // Icons
 import FlightIcon from '@mui/icons-material/Flight';
 import InfoIcon from '@mui/icons-material/Info';
 import SettingsIcon from '@mui/icons-material/Settings';
-import ErrorIcon from '@mui/icons-material/Error';
 
 export class ViewKeys {
-  public static ErrorView: string = 'ErrorView';
   public static MapView: string = 'MapView';
   public static SettingsView: string = 'SettingsView';
   public static AboutView: string = 'AboutView';
@@ -38,12 +36,4 @@ export const aboutViewNavigationData: INavigationElement = {
   importPath: 'views/AboutView',
   type: NavigationTypeEnumeration.Dialog,
   Icon: InfoIcon
-};
-
-export const errorViewNavigationData: INavigationElement = {
-  key: ViewKeys.ErrorView,
-  name: 'Error',
-  importPath: 'views/ErrorView',
-  type: NavigationTypeEnumeration.View,
-  Icon: ErrorIcon
 };

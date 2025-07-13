@@ -2,8 +2,8 @@ import React, { Suspense, useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { Box, ThemeProvider, CssBaseline, CircularProgress } from '@mui/material';
 import AppContextProvider from '../components/infrastructure/AppContextProvider.js';
-import NavigationProvider from '../components/infrastructure/NavigationProvider';
-import { navigationElements, getImportableView } from '../navigation/navigationElements';
+import NavigationProvider from '../components/infrastructure/NavigationProvider.js';
+import { navigationElements, getImportableView } from '../navigation/navigationElements.js';
 import RouterPage from './RouterPage.js';
 import { RESTService } from './../services/restService.js';
 import { GeospatialService } from './../services/geospatialService.js';
@@ -14,6 +14,7 @@ import { ThemeKeys, DarkTheme, LightTheme, PineappleTheme } from './../styles/in
 // Types
 import type { IService } from './../services/infrastructure/serviceTypes.js';
 
+// Styles
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './../styles/app.style.css';
 

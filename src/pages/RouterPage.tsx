@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Box, Fab } from '@mui/material';
-import { useNavigation } from '../components/infrastructure/NavigationProvider';
-import NavigationElementMenu from '../components/infrastructure/NavigationElementMenu';
-import { navigationElements } from '../navigation/navigationElements';
-import { ViewKeys } from '../views/viewKeys';
-import StartPage from './StartPage';
-import ErrorPage from './ErrorPage';
+import { useNavigation } from '../components/infrastructure/NavigationProvider.js';
+import NavigationElementMenu from '../components/infrastructure/NavigationElementMenu.js';
+import { navigationElements } from '../navigation/navigationElements.js';
+import { ViewKeys } from '../views/viewKeys.js';
+import StartPage from './StartPage.js';
+import ErrorPage from './ErrorPage.js';
 
 // Types
 import type { INavigationElement } from '../navigation/navigationTypes.js';
@@ -46,8 +46,7 @@ const RouterPage: React.FC<Props> = (props) => {
 
   const selectableNavigationElements = navigationElements.filter((element) => {
 
-    if (element.key === ViewKeys.MapView ||
-      element.key === ViewKeys.ErrorView)
+    if (element.key === ViewKeys.MapView)
       return false;
 
     return true;

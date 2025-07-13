@@ -2,8 +2,8 @@ import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Box } from '@mui/material';
 import { AppContext } from '../components/infrastructure/AppContextProvider.js';
 import { ServiceKeys } from './../services/serviceKeys.js';
-import { ViewKeys } from './viewKeys';
-import FlightMap from './../components/FlightMap';
+import { ViewKeys } from './viewKeys.js';
+import FlightMap from './../components/FlightMap.js';
 
 // Types
 import type { ViewState } from 'react-map-gl/mapbox';
