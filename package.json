@@ -8,7 +8,7 @@
     "dev": "concurrently \"npm run start:proxy\" \"vite\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "concurrently \"npm run start:proxy\" \"vite preview\""
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

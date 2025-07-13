@@ -39,7 +39,7 @@ VITE_REACT_OSKY_CLIENT_SECRET=<YOUR_OPENSKYNETWORK_CLIENTSECRET>
 ```
 Start the project:
 ```
-npm run dev
+npm run preview
 ```
 
 ## 📑 License:
